@@ -145,28 +145,43 @@ router.post('/products', requireAuth, (req, res) => {
   });
 });
 
+// ====================== 修改产品（支持 JSON 和文件上传） ======================
 router.put('/products/:id', requireAuth, (req, res) => {
-  uploadProductImage(req, res, async (err) => {
-    if (err) return res.status(400).json({ error: err.message });
+  const contentType = req.headers['content-type'] || '';
+  if (contentType.startsWith('multipart/form-data')) {
+    uploadProductImage(req, res, async (err) => {
+      if (err) return res.status(400).json({ error: err.message });
+      await handleProductUpdate(req, res);
+    });
+  } else {
+    handleProductUpdate(req, res);
+  }
+});
 
+async function handleProductUpdate(req, res) {
+  try {
     const { sku, name_zh, name_en, price1, price2, category_id, remove_image } = req.body;
     const product = db.prepare('SELECT * FROM products WHERE id = ?').get(req.params.id);
     if (!product) return res.status(404).json({ error: 'Not found' });
 
     let imagePath = product.image;
-    if (remove_image === 'true') {
+    if (remove_image === 'true' || remove_image === true) {
       imagePath = '';
     }
+    // 如果有文件上传，生成缩略图
     if (req.file) {
       const rawPath = '/uploads/products/' + req.file.filename;
       imagePath = await generateThumbnail(path.join(__dirname, 'public', rawPath));
     }
 
     db.prepare('UPDATE products SET sku=?, name_zh=?, name_en=?, price1=?, price2=?, category_id=?, image=?, updated_at=CURRENT_TIMESTAMP WHERE id=?')
-      .run(sku, name_zh, name_en, price1, price2, category_id, imagePath, req.params.id);
+      .run(sku ?? product.sku, name_zh ?? product.name_zh, name_en ?? product.name_en, price1 ?? product.price1, price2 ?? product.price2, category_id ?? product.category_id, imagePath, req.params.id);
     res.json({ success: true, image: imagePath });
-  });
-});
+  } catch (e) {
+    console.error('Update product error:', e);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+}
 
 router.delete('/products/:id', requireAuth, (req, res) => {
   db.prepare('DELETE FROM products WHERE id = ?').run(req.params.id);
