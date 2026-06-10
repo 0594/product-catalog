@@ -80,6 +80,7 @@ router.delete('/categories/:id', requireAuth, (req, res) => {
 });
 
 // ====================== 产品管理 ======================
+   //产品列表
 router.get('/products', (req, res) => {
   const { category, search, page = 1, limit: limitParam } = req.query;
   const limit = parseInt(limitParam) || parseInt(getSetting('products_per_page')) || 12;
@@ -104,6 +105,20 @@ router.get('/products', (req, res) => {
   const products = dataStmt.all(...params, limit, offset);
 
   res.json({ products, total, page: parseInt(page), limit });
+});
+
+// Excel 模板下载
+router.get('/products/template', (req, res) => {
+  const template = [
+    { SKU: 'DEMO-001', 中文名称: '示例产品', 英文名称: 'Sample Product', 价格1: 100, 价格2: 80, 分类ID: 1, 图片: 'https://example.com/img.jpg' }
+  ];
+  const ws = XLSX.utils.json_to_sheet(template);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Products');
+  const buf = XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' });
+  res.setHeader('Content-Disposition', 'attachment; filename=template.xlsx');
+  res.type('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+  res.send(buf);
 });
 
 router.get('/products/:id', (req, res) => {
@@ -289,19 +304,7 @@ router.post('/products/import', requireAuth, async (req, res) => {
   }
 });
 
-// Excel 模板下载
-router.get('/products/template', (req, res) => {
-  const template = [
-    { SKU: 'DEMO-001', 中文名称: '示例产品', 英文名称: 'Sample Product', 价格1: 100, 价格2: 80, 分类ID: 1, 图片: 'https://example.com/img.jpg' }
-  ];
-  const ws = XLSX.utils.json_to_sheet(template);
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, 'Products');
-  const buf = XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' });
-  res.setHeader('Content-Disposition', 'attachment; filename=template.xlsx');
-  res.type('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-  res.send(buf);
-});
+
 
 // ====================== 轮播图管理 ======================
 router.get('/banners', (req, res) => {
