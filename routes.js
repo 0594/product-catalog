@@ -185,35 +185,32 @@ router.delete('/products/batch/delete', requireAuth, (req, res) => {
   res.json({ success: true });
 });
 
-// ====================== Excel 导入 (SSE) ======================
-router.post('/products/import', requireAuth, (req, res) => {
-  uploadExcel(req, res, async (err) => {
-    if (err) return res.status(400).json({ error: err.message });
-    if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
+// ====================== Excel 导入 (SSE) - 修正版 ======================
+router.post('/products/import', requireAuth, async (req, res) => {
+  try {
+    uploadExcel(req, res, async (err) => {
+      if (err) return res.status(400).json({ error: err.message });
+      if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
 
-    // 设置SSE响应头
-    res.writeHead(200, {
-      'Content-Type': 'text/event-stream',
-      'Cache-Control': 'no-cache',
-      'Connection': 'keep-alive'
-    });
+      // 设置 SSE 响应头
+      res.writeHead(200, {
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-cache',
+        'Connection': 'keep-alive'
+      });
 
-    const workbook = XLSX.read(req.file.buffer, { type: 'buffer' });
-    const sheetName = workbook.SheetNames[0];
-    const worksheet = workbook.Sheets[sheetName];
-    const rows = XLSX.utils.sheet_to_json(worksheet, { defval: '' });
+      const workbook = XLSX.read(req.file.buffer, { type: 'buffer' });
+      const sheetName = workbook.SheetNames[0];
+      const worksheet = workbook.Sheets[sheetName];
+      const rows = XLSX.utils.sheet_to_json(worksheet, { defval: '' });
 
-    const total = rows.length;
-    let processed = 0;
-    let success = 0;
-    let skipped = 0;
+      const total = rows.length;
+      let processed = 0;
+      let success = 0;
+      let skipped = 0;
 
-    // 发送初始进度
-    res.write(`data: ${JSON.stringify({ total, processed: 0, success: 0, skipped: 0 })}\n\n`);
-
-    // 准备插入语句
-    const insertStmt = db.prepare('INSERT INTO products (sku, name_zh, name_en, price1, price2, category_id, image) VALUES (?,?,?,?,?,?,?)');
-    const transaction = db.transaction(() => {
+      // 先预处理所有行，下载远程图片
+      const productsToInsert = [];
       for (const row of rows) {
         const sku = String(row['SKU'] || row['sku'] || '').trim();
         if (!sku) {
@@ -221,6 +218,7 @@ router.post('/products/import', requireAuth, (req, res) => {
           processed++;
           continue;
         }
+
         const nameZh = row['中文名称'] || row['name_zh'] || '';
         const nameEn = row['英文名称'] || row['name_en'] || '';
         const price1 = parseFloat(row['价格1'] || row['price1'] || 0);
@@ -228,43 +226,67 @@ router.post('/products/import', requireAuth, (req, res) => {
         const categoryId = parseInt(row['分类ID'] || row['category_id'] || 0) || 0;
         let image = '';
 
-        // 处理图片：可能是URL
-        if (row['图片'] || row['image']) {
-          const imgVal = String(row['图片'] || row['image']).trim();
-          if (imgVal.startsWith('http://') || imgVal.startsWith('https://')) {
-            try {
-              const relativePath = await downloadImage(imgVal);
-              image = await generateThumbnail(path.join(__dirname, 'public', relativePath));
-            } catch (e) {
-              // 下载失败则跳过图片
-              image = '';
-            }
+        const imgVal = String(row['图片'] || row['image'] || '').trim();
+        if (imgVal && (imgVal.startsWith('http://') || imgVal.startsWith('https://'))) {
+          try {
+            const relativePath = await downloadImage(imgVal);
+            image = await generateThumbnail(
+              path.join(__dirname, 'public', relativePath)
+            );
+          } catch (e) {
+            // 下载失败，图片留空
+            image = '';
           }
         }
 
-        try {
-          insertStmt.run(sku, nameZh, nameEn, price1, price2, categoryId, image);
-          success++;
-        } catch (e) {
-          skipped++;
-        }
+        productsToInsert.push([sku, nameZh, nameEn, price1, price2, categoryId, image]);
         processed++;
+        success++; // 先预标记为成功，最终事务写入可能失败
 
-        // 每处理10条或最后一条发送进度
+        // 每处理 10 条发送进度
         if (processed % 10 === 0 || processed === total) {
-          res.write(`data: ${JSON.stringify({ total, processed, success, skipped })}\n\n`);
+          res.write(
+            `data: ${JSON.stringify({ total, processed, success, skipped })}\n\n`
+          );
         }
       }
-    });
 
-    try {
-      transaction();
-      res.write(`data: ${JSON.stringify({ total, processed, success, skipped, done: true })}\n\n`);
-    } catch (e) {
-      res.write(`data: ${JSON.stringify({ error: e.message, done: true })}\n\n`);
-    }
-    res.end();
-  });
+      // 事务批量插入
+      const insertStmt = db.prepare(
+        'INSERT INTO products (sku, name_zh, name_en, price1, price2, category_id, image) VALUES (?,?,?,?,?,?,?)'
+      );
+
+      let realSuccess = 0;
+      const transaction = db.transaction(() => {
+        for (const item of productsToInsert) {
+          try {
+            insertStmt.run(...item);
+            realSuccess++;
+          } catch (e) {
+            // 某条失败则计入跳过
+            skipped++;
+          }
+        }
+      });
+
+      try {
+        transaction();
+        success = realSuccess;
+        processed = total;
+        res.write(
+          `data: ${JSON.stringify({ total, processed, success, skipped, done: true })}\n\n`
+        );
+      } catch (e) {
+        res.write(
+          `data: ${JSON.stringify({ error: e.message, done: true })}\n\n`
+        );
+      }
+      res.end();
+    });
+  } catch (err) {
+    console.error('Import error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
 });
 
 // Excel 模板下载
