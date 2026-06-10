@@ -260,9 +260,18 @@
       document.querySelector('#lightbox img').src = src;
     }
 
-    document.getElementById('closeLightbox').addEventListener('click', () => {
-      document.getElementById('lightbox').classList.remove('active');
-    });
+    // 点击 X 按钮关闭
+document.getElementById('closeLightbox').addEventListener('click', function() {
+  document.getElementById('lightbox').classList.remove('active');
+});
+
+// 点击遮罩层背景空白处关闭（不关闭图片内的点击冒泡）
+document.getElementById('lightbox').addEventListener('click', function(e) {
+  // 只有点击遮罩层本身或直接点击图片时才关闭
+  if (e.target === this || e.target === this.querySelector('img')) {
+    this.classList.remove('active');
+  }
+});
 
     document.getElementById('langToggle').addEventListener('click', () => {
       setLang(state.lang === 'zh' ? 'en' : 'zh');
