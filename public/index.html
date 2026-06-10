@@ -37,19 +37,12 @@
       display: grid;
       gap: 1.2rem;
     }
-    /* 桌面端：宽度 ≥ 1025px → 5列 */
     @media (min-width: 1025px) {
-      .product-grid {
-        grid-template-columns: repeat(5, 1fr);
-      }
+      .product-grid { grid-template-columns: repeat(5, 1fr); }
     }
-    /* 平板端：641px ~ 1024px → 3列 */
     @media (min-width: 641px) and (max-width: 1024px) {
-      .product-grid {
-        grid-template-columns: repeat(3, 1fr);
-      }
+      .product-grid { grid-template-columns: repeat(3, 1fr); }
     }
-    /* 移动端：≤ 640px → 2列，超小屏保持2列 */
     @media (max-width: 640px) {
       .product-grid {
         grid-template-columns: repeat(2, 1fr);
@@ -62,8 +55,8 @@
       .product-card { border-radius: 6px; }
       .product-image { height: 160px; }
       .product-info { padding: 0.5rem; }
-      .product-name { font-size: 0.9rem; margin: 0.15rem 0; }
-      .product-sku { font-size: 0.7rem; }
+      .product-name { font-size: 0.9rem; }
+      .product-sku { font-size: 0.65rem; }
       .price1 { font-size: 1rem; }
       .price2 { font-size: 0.75rem; }
     }
@@ -73,21 +66,40 @@
     .product-image { width: 100%; height: 200px; display: flex; align-items: center; justify-content: center; background: #f1f5f9; cursor: pointer; }
     .product-image img { max-width: 100%; max-height: 100%; object-fit: contain; }
     .product-info { padding: 0.8rem; }
-    .product-sku { font-size: 0.75rem; color: var(--text-light); }
-    .product-name { font-weight: 600; margin: 0.3rem 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .product-prices { display: flex; gap: 0.5rem; align-items: baseline; flex-wrap: wrap; }
+
+    /* 产品名称：两行显示 */
+    .product-name {
+      font-weight: 600;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      line-height: 1.4;
+      height: calc(1.4em * 2);
+      margin-bottom: 0.2rem;
+      font-size: 0.9rem;
+    }
+
+    /* 价格行：包含价格1、价格2和SKU */
+    .product-prices {
+      display: flex;
+      align-items: baseline;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+    }
     .price1 { font-size: 1.1rem; font-weight: 700; color: #dc2626; }
     .price2 { font-size: 0.85rem; color: var(--text-light); text-decoration: line-through; }
+    .product-sku { font-size: 0.75rem; color: var(--text-light); white-space: nowrap; }
 
     .pagination { display: flex; justify-content: center; gap: 0.5rem; margin-top: 1.5rem; flex-wrap: wrap; }
     .page-btn { padding: 0.4rem 0.8rem; border: 1px solid var(--border); border-radius: 5px; cursor: pointer; background: #fff; }
     .page-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
 
+    /* 灯箱 */
     .lightbox { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); justify-content: center; align-items: center; z-index: 1000; }
     .lightbox.active { display: flex; }
     .lightbox img { max-width: 90%; max-height: 90%; border-radius: 8px; }
-    .close-lightbox { position: absolute; top: 20px; right: 30px; font-size: 2rem; color: #fff; cursor: pointer; }
-    .no-image { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: #ccc; font-size: 2rem; }
 
     .footer {
       background: #fff;
@@ -128,7 +140,6 @@
   <footer class="footer" id="copyrightFooter"></footer>
 
   <div class="lightbox" id="lightbox">
-    <span class="close-lightbox" id="closeLightbox">&times;</span>
     <img src="" alt="">
   </div>
 
@@ -196,9 +207,7 @@
           wrapper.innerHTML = activeBanners.map(b => `<div class="swiper-slide"><img src="${b.image}" alt=""></div>`).join('');
           new Swiper('#bannerSwiper', { loop: true, autoplay: { delay: 3000 }, pagination: { el: '.swiper-pagination', clickable: true } });
         }
-      } catch (e) {
-        // 轮播加载失败不影响产品展示
-      }
+      } catch (e) {}
     }
 
     async function loadProducts(page = 1) {
@@ -220,11 +229,13 @@
       const displayMode = state.settings.price_display || 'both';
       const currency = state.settings.currency_symbol || '¥';
       const defaultImg = state.settings.default_image || '/images/no-image.png';
+      const PLACEHOLDER = 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect fill="#ccc" width="100" height="100"/><text x="50" y="55" text-anchor="middle" fill="white" font-size="12">N/A</text></svg>');
 
       grid.innerHTML = state.products.map(p => {
         const name = t(p.name_zh, p.name_en);
         const price1 = Number(p.price1);
         const price2 = Number(p.price2);
+        const imgSrc = p.image || defaultImg || PLACEHOLDER;
         let priceHTML = '';
         if (displayMode === 'both') priceHTML = `<span class="price1">${currency}${price1}</span><span class="price2">${currency}${price2}</span>`;
         else if (displayMode === 'price1') priceHTML = `<span class="price1">${currency}${price1}</span>`;
@@ -232,13 +243,15 @@
 
         return `
           <div class="product-card">
-            <div class="product-image" onclick="openLightbox('${p.image || defaultImg}')">
-              ${p.image ? `<img src="${p.image}" alt="${name}">` : `<div class="no-image">📷</div>`}
+            <div class="product-image" onclick="openLightbox('${imgSrc}')">
+              <img src="${imgSrc}" alt="${name}" onerror="this.onerror=null;this.src='${PLACEHOLDER}';">
             </div>
             <div class="product-info">
-              <div class="product-sku">${p.sku}</div>
               <div class="product-name" title="${name}">${name}</div>
-              <div class="product-prices">${priceHTML}</div>
+              <div class="product-prices">
+                ${priceHTML}
+                <span class="product-sku">${p.sku}</span>
+              </div>
             </div>
           </div>`;
       }).join('');
@@ -260,18 +273,12 @@
       document.querySelector('#lightbox img').src = src;
     }
 
-    // 点击 X 按钮关闭
-document.getElementById('closeLightbox').addEventListener('click', function() {
-  document.getElementById('lightbox').classList.remove('active');
-});
-
-// 点击遮罩层背景空白处关闭（不关闭图片内的点击冒泡）
-document.getElementById('lightbox').addEventListener('click', function(e) {
-  // 只有点击遮罩层本身或直接点击图片时才关闭
-  if (e.target === this || e.target === this.querySelector('img')) {
-    this.classList.remove('active');
-  }
-});
+    // 点击遮罩层关闭灯箱（无X按钮）
+    document.getElementById('lightbox').addEventListener('click', function(e) {
+      if (e.target === this) {
+        this.classList.remove('active');
+      }
+    });
 
     document.getElementById('langToggle').addEventListener('click', () => {
       setLang(state.lang === 'zh' ? 'en' : 'zh');
@@ -286,11 +293,10 @@ document.getElementById('lightbox').addEventListener('click', function(e) {
     });
     document.getElementById('categoryFilter').addEventListener('change', () => loadProducts(1));
 
-    // 初始化
     (async () => {
       await loadSettings();
       await loadCategories();
-      loadBanners(); // 不阻塞
+      loadBanners();
       loadProducts(1);
     })();
   </script>
