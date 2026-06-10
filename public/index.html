@@ -24,7 +24,7 @@
     .lang-switch { cursor: pointer; background: none; border: none; font-size: 0.9rem; color: var(--primary); white-space: nowrap; }
     .controls { display: flex; gap: 0.5rem; align-items: center; margin-top: 0.6rem; }
     .search-input, select { padding: 0.5rem 0.8rem; border: 1px solid var(--border); border-radius: 6px; background: #fff; font-size: 0.9rem; }
-    .search-input { width: 220px; }          /* 桌面固定宽度 */
+    .search-input { width: 220px; }
     @media (max-width: 640px) {
       .search-input { flex: 1; width: auto; }
       .header-inner { padding: 0.5rem; }
@@ -38,7 +38,6 @@
     .swiper img { width: 100%; height: 100%; object-fit: cover; }
     .container { max-width: 1280px; margin: 0 auto; padding: 1rem; flex: 1; }
 
-    /* 产品网格 - 核心修复 */
     .product-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
@@ -82,7 +81,6 @@
     .close-lightbox { position: absolute; top: 20px; right: 30px; font-size: 2rem; color: #fff; cursor: pointer; }
     .no-image { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: #ccc; font-size: 2rem; }
 
-    /* 底部版权 */
     .footer {
       background: #fff;
       border-top: 1px solid var(--border);
@@ -128,6 +126,12 @@
 
   <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
   <script>
+    // 自检：如果 Swiper 加载失败，页面会显示提示
+    if (typeof Swiper === 'undefined') {
+      document.body.innerHTML = '<h2 style="text-align:center;margin-top:50px;">Swiper 脚本加载失败，请检查网络或 CDN 访问</h2>';
+      throw new Error('Swiper not loaded');
+    }
+
     const state = {
       lang: (navigator.language || 'zh').startsWith('zh') ? 'zh' : 'en',
       currentPage: 1,
@@ -160,6 +164,7 @@
 
     async function loadSettings() {
       const res = await fetch('/api/settings');
+      if (!res.ok) throw new Error('Settings API failed');
       state.settings = await res.json();
       document.getElementById('siteTitle').textContent = state.settings.site_title || 'Product Catalog';
       updateCopyright();
@@ -167,6 +172,7 @@
 
     async function loadCategories() {
       const res = await fetch('/api/categories');
+      if (!res.ok) throw new Error('Categories API failed');
       const categories = await res.json();
       const select = document.getElementById('categoryFilter');
       select.querySelectorAll('option:not([value="all"])').forEach(opt => opt.remove());
@@ -193,17 +199,23 @@
     }
 
     async function loadProducts(page = 1) {
-      const category = document.getElementById('categoryFilter').value;
-      const search = document.getElementById('searchInput').value;
-      const limit = state.settings.products_per_page || 12;
-      const params = new URLSearchParams({ category, search, page, limit });
-      const res = await fetch('/api/products?' + params);
-      const data = await res.json();
-      state.products = data.products;
-      state.total = data.total;
-      state.currentPage = page;
-      renderProducts();
-      renderPagination();
+      try {
+        const category = document.getElementById('categoryFilter').value;
+        const search = document.getElementById('searchInput').value;
+        const limit = state.settings.products_per_page || 12;
+        const params = new URLSearchParams({ category, search, page, limit });
+        const res = await fetch('/api/products?' + params);
+        if (!res.ok) throw new Error('Products API failed');
+        const data = await res.json();
+        state.products = data.products;
+        state.total = data.total;
+        state.currentPage = page;
+        renderProducts();
+        renderPagination();
+      } catch (e) {
+        console.error(e);
+        document.getElementById('productGrid').innerHTML = '<p style="padding:2rem;color:red;">加载产品失败，请检查控制台错误</p>';
+      }
     }
 
     function renderProducts() {
@@ -270,11 +282,17 @@
 
     document.getElementById('categoryFilter').addEventListener('change', () => loadProducts(1));
 
+    // 启动
     (async () => {
-      await loadSettings();
-      await loadCategories();
-      await loadBanners();
-      await loadProducts();
+      try {
+        await loadSettings();
+        await loadCategories();
+        await loadBanners();
+        await loadProducts();
+      } catch (e) {
+        console.error('初始化失败:', e);
+        document.body.innerHTML = '<h2 style="text-align:center;margin-top:50px;">系统初始化失败，请检查后端服务是否正常</h2>';
+      }
     })();
   </script>
 </body>
