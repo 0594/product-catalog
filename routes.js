@@ -362,5 +362,13 @@ router.put('/settings', requireAuth, (req, res) => {
   }
   res.json({ success: true });
 });
-
+// 清除所有数据（保留网站设置）
+router.post('/clear-database', requireAuth, (req, res) => {
+  db.prepare('DELETE FROM products').run();
+  db.prepare('DELETE FROM categories').run();
+  db.prepare('DELETE FROM banners').run();
+  // 重置自增ID
+  db.prepare("DELETE FROM sqlite_sequence WHERE name IN ('products','categories','banners')").run();
+  res.json({ success: true });
+});
 module.exports = router;
