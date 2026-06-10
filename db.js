@@ -49,8 +49,8 @@ const defaultSettings = {
   price_display: 'both', // both / price1 / price2
   default_image: '/images/no-image.png',
   currency_symbol: '¥',
-  captcha_enabled: 'true'
-  copyright: '© 2024 Product Catalog. All rights reserved.'   // 新增
+  captcha_enabled: 'true',
+  copyright: '© 2026 Product Catalog. All rights reserved.'   // 新增
 };
 
 const insertSetting = db.prepare('INSERT OR IGNORE INTO settings (key, value) VALUES (?, ?)');
