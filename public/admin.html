@@ -3,214 +3,782 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>后台管理</title>
+  <title>后台管理 - 产品展示系统</title>
   <style>
     :root {
       --primary: #2563eb;
+      --primary-light: #dbeafe;
       --danger: #dc2626;
+      --danger-light: #fee2e2;
+      --success: #16a34a;
+      --success-light: #dcfce7;
+      --warning: #f59e0b;
+      --warning-light: #fef3c7;
       --bg: #f8fafc;
-      --card: #fff;
+      --card: #ffffff;
       --border: #e2e8f0;
+      --text: #1e293b;
+      --text-light: #64748b;
+      --radius: 8px;
     }
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Segoe UI', 'PingFang SC', sans-serif; background: var(--bg); }
-    .login-container { max-width: 400px; margin: 100px auto; background: var(--card); padding: 2rem; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.1); }
-    .admin-container { max-width: 1400px; margin: 0 auto; padding: 1rem; display: none; }
-    .tabs { display: flex; gap: 0.3rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
-    .tab { padding: 0.5rem 1rem; background: #e2e8f0; border-radius: 6px 6px 0 0; cursor: pointer; }
-    .tab.active { background: var(--primary); color: #fff; }
-    .tab-content { display: none; }
+    body { font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif; background: var(--bg); color: var(--text); }
+    
+    /* 登录页 */
+    .login-container {
+      max-width: 400px; margin: 80px auto; background: var(--card); padding: 2rem;
+      border-radius: var(--radius); box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    }
+    .login-container h2 { text-align: center; margin-bottom: 1.5rem; }
+    .captcha-row { display: flex; gap: 0.5rem; align-items: center; margin-bottom: 1rem; }
+    .captcha-row img { cursor: pointer; border: 1px solid var(--border); border-radius: 4px; height: 40px; }
+    .captcha-row input { flex: 1; }
+    
+    /* 管理布局 */
+    .admin-wrapper { display: none; }
+    .topbar {
+      background: var(--card); padding: 0.8rem 1.5rem; display: flex;
+      justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border);
+      margin-bottom: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    }
+    .topbar h1 { font-size: 1.5rem; }
+    .tabs { display: flex; gap: 0.3rem; margin: 0 1.5rem 1.5rem; }
+    .tab {
+      padding: 0.5rem 1.2rem; border-radius: 20px; cursor: pointer;
+      background: var(--border); font-size: 0.9rem; transition: all 0.2s;
+    }
+    .tab.active { background: var(--primary); color: white; }
+    .tab-content { display: none; padding: 0 1.5rem; }
     .tab-content.active { display: block; }
-    table { width: 100%; border-collapse: collapse; background: var(--card); }
-    th, td { padding: 0.5rem; border: 1px solid var(--border); text-align: left; font-size: 0.85rem; }
-    th { background: #f1f5f9; }
-    .editable { cursor: pointer; }
-    .editable input { width: 100%; padding: 0.2rem; }
-    .btn { padding: 0.4rem 0.8rem; border: none; border-radius: 4px; cursor: pointer; font-size: 0.8rem; }
-    .btn-primary { background: var(--primary); color: #fff; }
-    .btn-danger { background: var(--danger); color: #fff; }
-    .progress { height: 20px; background: #e2e8f0; border-radius: 10px; margin-top: 10px; overflow: hidden; }
-    .progress-bar { height: 100%; background: var(--primary); width: 0%; transition: width 0.3s; }
-    .image-preview { width: 40px; height: 40px; object-fit: cover; }
+    
+    /* 通用组件 */
+    .btn {
+      padding: 0.4rem 0.9rem; border: none; border-radius: 5px; cursor: pointer;
+      font-size: 0.85rem; font-weight: 500; transition: opacity 0.2s;
+    }
+    .btn:hover { opacity: 0.9; }
+    .btn-primary { background: var(--primary); color: white; }
+    .btn-danger { background: var(--danger); color: white; }
+    .btn-success { background: var(--success); color: white; }
+    .btn-warning { background: var(--warning); color: white; }
+    .btn-outline { background: white; border: 1px solid var(--border); color: var(--text); }
+    .btn-group { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1rem; align-items: center; }
+    
+    input, select, textarea {
+      padding: 0.5rem 0.7rem; border: 1px solid var(--border); border-radius: 4px;
+      font-size: 0.9rem; outline: none; background: white;
+    }
+    input:focus, select:focus { border-color: var(--primary); box-shadow: 0 0 0 2px var(--primary-light); }
+    
+    table { width: 100%; border-collapse: collapse; background: var(--card); border-radius: var(--radius); overflow: hidden; }
+    th, td { padding: 0.6rem 0.5rem; border-bottom: 1px solid var(--border); font-size: 0.85rem; text-align: left; }
+    th { background: #f8fafc; font-weight: 600; }
+    tr:hover td { background: #f1f5f9; }
+    .editable { cursor: pointer; position: relative; }
+    .editable:hover { background: #e2e8f0; }
+    .editable input, .editable select { width: 100%; min-width: 80px; }
+    .image-thumb { width: 40px; height: 40px; object-fit: cover; border-radius: 4px; cursor: pointer; }
+    .pagination { display: flex; gap: 0.5rem; justify-content: center; margin-top: 1rem; }
+    .page-btn { padding: 0.3rem 0.7rem; background: var(--card); border: 1px solid var(--border); border-radius: 4px; cursor: pointer; }
+    .page-btn.active { background: var(--primary); color: white; }
+    
+    /* 模态框 */
+    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); z-index: 1000; justify-content: center; align-items: center; }
+    .modal.active { display: flex; }
+    .modal-content { background: var(--card); border-radius: var(--radius); padding: 1.5rem; max-width: 500px; width: 90%; }
+    .modal-content h3 { margin-bottom: 1rem; }
+    .form-group { margin-bottom: 0.8rem; }
+    .form-group label { display: block; margin-bottom: 0.2rem; font-size: 0.85rem; font-weight: 500; }
+    
+    /* 进度条 */
+    .progress-container { margin: 0.5rem 0; }
+    .progress-bar { height: 20px; background: #e2e8f0; border-radius: 10px; overflow: hidden; }
+    .progress-fill { height: 100%; background: var(--primary); width: 0%; transition: width 0.3s; border-radius: 10px; }
+    .progress-text { font-size: 0.8rem; color: var(--text-light); margin-top: 0.2rem; }
+    
+    /* 通知 */
+    .toast { position: fixed; top: 20px; right: 20px; background: var(--card); padding: 0.8rem 1.2rem; border-radius: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); z-index: 2000; display: none; }
+    .toast.show { display: block; animation: fadeIn 0.3s; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
   </style>
 </head>
 <body>
-  <div class="login-container" id="loginBox">
-    <h2>管理员登录</h2>
-    <div id="captchaBox"><img id="captchaImg" src="/api/captcha" alt="验证码" onclick="this.src='/api/captcha?'+Date.now()"><br>
-      <input type="text" id="captchaInput" placeholder="验证码">
-    </div>
-    <input type="password" id="passwordInput" placeholder="密码"><br><br>
-    <button class="btn btn-primary" onclick="login()">登录</button>
+
+<!-- 登录界面 -->
+<div class="login-container" id="loginBox">
+  <h2>🔐 管理员登录</h2>
+  <div class="form-group">
+    <input type="password" id="passwordInput" placeholder="请输入密码" onkeydown="if(event.key==='Enter') login()">
+  </div>
+  <div class="captcha-row" id="captchaGroup">
+    <input type="text" id="captchaInput" placeholder="验证码" onkeydown="if(event.key==='Enter') login()">
+    <img id="captchaImg" src="/api/captcha" alt="验证码" onclick="refreshCaptcha()">
+  </div>
+  <button class="btn btn-primary" style="width:100%;margin-top:0.5rem" onclick="login()">登录</button>
+</div>
+
+<!-- 管理后台 -->
+<div class="admin-wrapper" id="adminBox">
+  <div class="topbar">
+    <h1 id="siteTitleDisplay">产品展示系统</h1>
+    <button class="btn btn-outline" onclick="logout()">退出登录</button>
+  </div>
+  
+  <div class="tabs">
+    <div class="tab active" data-tab="products">📦 产品管理</div>
+    <div class="tab" data-tab="categories">🏷️ 分类管理</div>
+    <div class="tab" data-tab="banners">🖼️ 轮播图</div>
+    <div class="tab" data-tab="settings">⚙️ 网站设置</div>
   </div>
 
-  <div class="admin-container" id="adminBox">
-    <div class="tabs">
-      <div class="tab active" data-tab="products">产品管理</div>
-      <div class="tab" data-tab="categories">分类管理</div>
-      <div class="tab" data-tab="banners">轮播图</div>
-      <div class="tab" data-tab="settings">设置</div>
-      <button class="btn btn-danger" onclick="logout()" style="margin-left:auto">退出</button>
+  <!-- 产品管理 -->
+  <div class="tab-content active" id="tab-products">
+    <div class="btn-group">
+      <button class="btn btn-primary" onclick="openProductModal()">➕ 添加产品</button>
+      <button class="btn btn-warning" onclick="document.getElementById('excelFileInput').click()">📥 Excel导入</button>
+      <input type="file" id="excelFileInput" accept=".xlsx" style="display:none" onchange="handleExcelUpload(this)">
+      <a href="/api/products/template" class="btn btn-outline">📄 下载模板</a>
+      <button class="btn btn-danger" onclick="batchDeleteProducts()">🗑️ 批量删除</button>
+      <button class="btn btn-outline" onclick="batchUpdateProducts()">✏️ 批量修改</button>
     </div>
-
-    <div class="tab-content active" id="tab-products">
-      <div style="margin-bottom:1rem;">
-        <button class="btn btn-primary" onclick="showAddModal()">添加产品</button>
-        <button class="btn btn-primary" onclick="document.getElementById('excelFile').click()">Excel导入</button>
-        <input type="file" id="excelFile" accept=".xlsx" style="display:none" onchange="importExcel(this)">
-        <a href="/api/products/template" class="btn" style="background:#f59e0b;color:#fff;">下载模板</a>
-        <button class="btn btn-danger" onclick="batchDelete()">批量删除</button>
-        <button class="btn" onclick="batchUpdate()">批量修改</button>
-        <div class="progress" id="importProgress"><div class="progress-bar" id="progressBar"></div></div>
-        <span id="progressText"></span>
-      </div>
+    <div class="progress-container" id="importProgress" style="display:none">
+      <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+      <div class="progress-text" id="progressText"></div>
+    </div>
+    <div style="overflow-x:auto;">
       <table id="productsTable">
-        <thead><tr><th><input type="checkbox" id="selectAll"></th><th>SKU</th><th>中文名</th><th>英文名</th><th>价格1</th><th>价格2</th><th>分类</th><th>图片</th><th>操作</th></tr></thead>
+        <thead>
+          <tr>
+            <th><input type="checkbox" id="selectAllProducts"></th>
+            <th>SKU</th>
+            <th>中文名称</th>
+            <th>英文名称</th>
+            <th>价格1</th>
+            <th>价格2</th>
+            <th>分类</th>
+            <th>图片</th>
+            <th>操作</th>
+          </tr>
+        </thead>
         <tbody></tbody>
       </table>
-      <div id="pagination" style="margin-top:1rem;"></div>
     </div>
-
-    <div class="tab-content" id="tab-categories">
-      <button class="btn btn-primary" onclick="addCategory()">新增分类</button>
-      <table><thead><tr><th>ID</th><th>中文名</th><th>英文名</th><th>操作</th></tr></thead><tbody id="catTbody"></tbody></table>
-    </div>
-
-    <div class="tab-content" id="tab-banners">
-      <input type="file" id="bannerFile" accept="image/*" onchange="uploadBanner()">
-      <table><thead><tr><th>图片</th><th>排序</th><th>启用</th><th>操作</th></tr></thead><tbody id="bannerTbody"></tbody></table>
-    </div>
-
-    <div class="tab-content" id="tab-settings">
-      <form id="settingsForm"></form>
-    </div>
+    <div class="pagination" id="productsPagination"></div>
   </div>
 
-  <script>
-    let currentPage = 1;
-    const base = '/api';
+  <!-- 分类管理 -->
+  <div class="tab-content" id="tab-categories">
+    <button class="btn btn-primary" onclick="openCategoryModal()" style="margin-bottom:1rem;">➕ 新增分类</button>
+    <table>
+      <thead><tr><th>ID</th><th>中文名称</th><th>英文名称</th><th>操作</th></tr></thead>
+      <tbody id="categoriesTbody"></tbody>
+    </table>
+  </div>
 
-    // 登录相关
-    async function checkAuth() {
-      const res = await fetch(base + '/check-auth');
-      const data = await res.json();
-      if (data.loggedIn) {
-        document.getElementById('loginBox').style.display = 'none';
-        document.getElementById('adminBox').style.display = 'block';
-        loadProducts();
-      }
+  <!-- 轮播图管理 -->
+  <div class="tab-content" id="tab-banners">
+    <div class="btn-group">
+      <label class="btn btn-primary" style="cursor:pointer;">➕ 上传轮播图
+        <input type="file" id="bannerFileInput" accept="image/*" style="display:none" onchange="uploadBanner()">
+      </label>
+    </div>
+    <table>
+      <thead><tr><th>图片</th><th>排序</th><th>状态</th><th>操作</th></tr></thead>
+      <tbody id="bannersTbody"></tbody>
+    </table>
+  </div>
+
+  <!-- 网站设置 -->
+  <div class="tab-content" id="tab-settings">
+    <form id="settingsForm" style="max-width:500px;">
+      <div class="form-group">
+        <label>网站标题</label>
+        <input name="site_title" required>
+      </div>
+      <div class="form-group">
+        <label>每页产品数量</label>
+        <input type="number" name="products_per_page" min="4" max="100">
+      </div>
+      <div class="form-group">
+        <label>价格显示模式</label>
+        <select name="price_display">
+          <option value="both">双价格</option>
+          <option value="price1">仅价格1</option>
+          <option value="price2">仅价格2</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>默认产品图片（路径）</label>
+        <input name="default_image" placeholder="/images/no-image.png">
+      </div>
+      <div class="form-group">
+        <label>货币符号</label>
+        <input name="currency_symbol" placeholder="¥">
+      </div>
+      <div class="form-group">
+        <label>启用验证码</label>
+        <select name="captcha_enabled">
+          <option value="true">开启</option>
+          <option value="false">关闭</option>
+        </select>
+      </div>
+      <button type="submit" class="btn btn-primary">保存设置</button>
+    </form>
+  </div>
+</div>
+
+<!-- 产品编辑模态框 -->
+<div class="modal" id="productModal">
+  <div class="modal-content">
+    <h3 id="productModalTitle">添加产品</h3>
+    <form id="productForm">
+      <input type="hidden" name="id">
+      <div class="form-group"><label>SKU *</label><input name="sku" required></div>
+      <div class="form-group"><label>中文名称</label><input name="name_zh"></div>
+      <div class="form-group"><label>英文名称</label><input name="name_en"></div>
+      <div class="form-group"><label>价格1</label><input type="number" step="0.01" name="price1" value="0"></div>
+      <div class="form-group"><label>价格2</label><input type="number" step="0.01" name="price2" value="0"></div>
+      <div class="form-group"><label>分类</label><select name="category_id" id="productCatSelect"></select></div>
+      <div class="form-group">
+        <label>图片</label>
+        <input type="file" id="productImageFile" accept="image/*">
+        <div id="currentProductImage" style="margin-top:0.3rem;"></div>
+        <label style="display:inline-flex;align-items:center;margin-top:0.3rem;">
+          <input type="checkbox" name="remove_image" value="true"> 删除现有图片
+        </label>
+      </div>
+      <div style="display:flex;gap:0.5rem;justify-content:flex-end;">
+        <button type="button" class="btn btn-outline" onclick="closeProductModal()">取消</button>
+        <button type="submit" class="btn btn-primary">保存</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- 分类编辑模态框 -->
+<div class="modal" id="categoryModal">
+  <div class="modal-content">
+    <h3 id="categoryModalTitle">新增分类</h3>
+    <form id="categoryForm">
+      <input type="hidden" name="id">
+      <div class="form-group"><label>中文名称</label><input name="name_zh"></div>
+      <div class="form-group"><label>英文名称</label><input name="name_en"></div>
+      <div style="display:flex;gap:0.5rem;justify-content:flex-end;">
+        <button type="button" class="btn btn-outline" onclick="closeCategoryModal()">取消</button>
+        <button type="submit" class="btn btn-primary">保存</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Toast通知 -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ========== 全局状态 ==========
+const API = '/api';
+let productsPage = 1;
+let categoriesCache = [];
+
+// ========== 工具函数 ==========
+function showToast(msg, type = 'success') {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.style.color = type === 'error' ? '#dc2626' : '#16a34a';
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 3000);
+}
+
+async function request(url, options = {}) {
+  try {
+    const res = await fetch(url, options);
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ error: '请求失败' }));
+      throw new Error(err.error || `HTTP ${res.status}`);
     }
+    return await res.json();
+  } catch (e) {
+    showToast(e.message, 'error');
+    throw e;
+  }
+}
 
-    async function login() {
-      const password = document.getElementById('passwordInput').value;
-      const captcha = document.getElementById('captchaInput')?.value;
-      const res = await fetch(base + '/login', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password, captcha })
-      });
-      if (res.ok) checkAuth();
-      else alert('登录失败');
-    }
+// ========== 登录管理 ==========
+function refreshCaptcha() {
+  document.getElementById('captchaImg').src = API + '/captcha?' + Date.now();
+}
 
-    async function logout() {
-      await fetch(base + '/logout', { method: 'POST' });
-      location.reload();
-    }
+async function login() {
+  const password = document.getElementById('passwordInput').value;
+  const captcha = document.getElementById('captchaInput')?.value;
+  try {
+    await request(API + '/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password, captcha })
+    });
+    document.getElementById('loginBox').style.display = 'none';
+    document.getElementById('adminBox').style.display = 'block';
+    initAdmin();
+  } catch (e) {
+    refreshCaptcha();
+  }
+}
 
-    // 产品列表
-    async function loadProducts(page = 1) {
-      currentPage = page;
-      const res = await fetch(base + '/products?page=' + page);
-      const data = await res.json();
-      const tbody = document.querySelector('#productsTable tbody');
-      tbody.innerHTML = data.products.map(p => `
-        <tr>
-          <td><input type="checkbox" value="${p.id}" class="product-check"></td>
-          <td class="editable" data-field="sku" data-id="${p.id}">${p.sku}</td>
-          <td class="editable" data-field="name_zh" data-id="${p.id}">${p.name_zh}</td>
-          <td class="editable" data-field="name_en" data-id="${p.id}">${p.name_en}</td>
-          <td class="editable" data-field="price1" data-id="${p.id}">${p.price1}</td>
-          <td class="editable" data-field="price2" data-id="${p.id}">${p.price2}</td>
-          <td class="editable" data-field="category_id" data-id="${p.id}">${p.category_id}</td>
-          <td><img src="${p.image || '/images/no-image.png'}" class="image-preview" onclick="editImage(${p.id})"></td>
-          <td><button class="btn btn-danger" onclick="deleteProduct(${p.id})">删除</button></td>
-        </tr>`).join('');
+async function logout() {
+  await request(API + '/logout', { method: 'POST' });
+  location.reload();
+}
 
-      document.querySelectorAll('.editable').forEach(td => {
-        td.addEventListener('dblclick', function() {
-          const original = this.innerText;
-          this.innerHTML = `<input value="${original}" onblur="saveCell(this, '${this.dataset.field}', ${this.dataset.id}, '${original}')">`;
-          this.querySelector('input').focus();
-        });
-      });
-    }
+// 检查登录状态
+async function checkAuth() {
+  const res = await fetch(API + '/check-auth');
+  const data = await res.json();
+  if (data.loggedIn) {
+    document.getElementById('loginBox').style.display = 'none';
+    document.getElementById('adminBox').style.display = 'block';
+    initAdmin();
+  }
+}
 
-    async function saveCell(input, field, id, original) {
-      const value = input.value;
-      if (value === original) { input.parentElement.innerText = original; return; }
-      await fetch(base + '/products/' + id, {
-        method: 'PUT', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ [field]: value })
-      });
-      loadProducts(currentPage);
-    }
+// ========== 初始化后台 ==========
+async function initAdmin() {
+  await loadSettings();
+  await loadCategoriesCache();
+  document.querySelector('.tab[data-tab="products"]').click();
+}
 
-    async function deleteProduct(id) {
-      if (!confirm('确认删除？')) return;
-      await fetch(base + '/products/' + id, { method: 'DELETE' });
-      loadProducts(currentPage);
-    }
+// ========== 标签切换 ==========
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', function() {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    this.classList.add('active');
+    const target = this.dataset.tab;
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    document.getElementById('tab-' + target).classList.add('active');
+    
+    if (target === 'products') loadProducts();
+    else if (target === 'categories') loadCategories();
+    else if (target === 'banners') loadBanners();
+    else if (target === 'settings') loadSettingsToForm();
+  });
+});
 
-    async function batchDelete() {
-      const ids = [...document.querySelectorAll('.product-check:checked')].map(cb => cb.value);
-      if (!ids.length) return alert('请选择产品');
-      if (!confirm(`确认删除 ${ids.length} 个产品？`)) return;
-      await fetch(base + '/products/batch/delete', {
-        method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ids })
-      });
-      loadProducts(currentPage);
-    }
+// ========== 产品管理 ==========
+async function loadProducts(page = 1) {
+  productsPage = page;
+  const res = await request(API + '/products?page=' + page);
+  renderProducts(res.products);
+  renderProductsPagination(res.total, res.limit);
+}
 
-    function batchUpdate() {
-      const ids = [...document.querySelectorAll('.product-check:checked')].map(cb => cb.value);
-      if (!ids.length) return alert('请选择产品');
-      const price1 = prompt('新价格1（留空不修改）');
-      const price2 = prompt('新价格2（留空不修改）');
-      const cat = prompt('新分类ID（留空不修改）');
-      const body = { ids };
-      if (price1 !== null && price1 !== '') body.price1 = parseFloat(price1);
-      if (price2 !== null && price2 !== '') body.price2 = parseFloat(price2);
-      if (cat !== null && cat !== '') body.category_id = parseInt(cat);
-      fetch(base + '/products/batch/update', {
-        method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body)
-      }).then(() => loadProducts(currentPage));
-    }
+function renderProducts(products) {
+  const tbody = document.querySelector('#productsTable tbody');
+  tbody.innerHTML = products.map(p => {
+    const catName = getCategoryName(p.category_id);
+    return `
+    <tr>
+      <td><input type="checkbox" value="${p.id}" class="product-check"></td>
+      <td class="editable" data-field="sku" data-id="${p.id}">${esc(p.sku)}</td>
+      <td class="editable" data-field="name_zh" data-id="${p.id}">${esc(p.name_zh)}</td>
+      <td class="editable" data-field="name_en" data-id="${p.id}">${esc(p.name_en)}</td>
+      <td class="editable" data-field="price1" data-id="${p.id}">${p.price1}</td>
+      <td class="editable" data-field="price2" data-id="${p.id}">${p.price2}</td>
+      <td class="editable" data-field="category_id" data-id="${p.id}" data-type="select">${catName} (${p.category_id})</td>
+      <td><img src="${p.image || '/images/no-image.png'}" class="image-thumb" onclick="editProductImage(${p.id})" title="点击更换图片"></td>
+      <td>
+        <button class="btn btn-outline" style="padding:0.2rem 0.5rem;font-size:0.75rem" onclick="editProduct(${p.id})">✏️</button>
+        <button class="btn btn-danger" style="padding:0.2rem 0.5rem;font-size:0.75rem" onclick="deleteProduct(${p.id})">🗑️</button>
+      </td>
+    </tr>`;
+  }).join('');
+  
+  // 绑定双击编辑
+  document.querySelectorAll('.editable').forEach(td => {
+    td.addEventListener('dblclick', makeEditable);
+  });
+  
+  document.getElementById('selectAllProducts').onclick = function() {
+    document.querySelectorAll('.product-check').forEach(cb => cb.checked = this.checked);
+  };
+}
 
-    // Excel导入 SSE
-    function importExcel(input) {
-      const file = input.files[0];
-      if (!file) return;
-      const formData = new FormData();
-      formData.append('file', file);
-      const xhr = new XMLHttpRequest();
-      xhr.open('POST', base + '/products/import');
-      xhr.setRequestHeader('Accept', 'text/event-stream');
-      xhr.onprogress = function() {
-        const responseText = xhr.responseText;
-        const lines = responseText.split('\n').filter(l => l.startsWith('data: '));
-        if (lines.length) {
-          const last = JSON.parse(lines[lines.length-1].replace('data: ', ''));
-          document.getElementById('progressBar').style.width = (last.processed / last.total * 100) + '%';
-          document.getElementById('progressText').textContent = `已处理: ${last.processed}/${last.total} 成功: ${last.success} 跳过: ${last.skipped}`;
-          if (last.done) { loadProducts(currentPage); }
+function esc(str) {
+  return String(str).replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+function getCategoryName(id) {
+  if (id == 0) return '无分类';
+  const cat = categoriesCache.find(c => c.id == id);
+  return cat ? (cat.name_zh || cat.name_en || id) : id;
+}
+
+function makeEditable(e) {
+  const td = e.target;
+  const field = td.dataset.field;
+  const id = td.dataset.id;
+  const currentVal = td.innerText.trim();
+  const type = td.dataset.type;
+  
+  if (type === 'select') {
+    // 分类下拉选择
+    const select = document.createElement('select');
+    select.innerHTML = `<option value="0">无分类</option>` + 
+      categoriesCache.map(c => `<option value="${c.id}" ${c.id == id ? 'selected' : ''}>${c.name_zh || c.name_en}</option>`).join('');
+    td.innerHTML = '';
+    td.appendChild(select);
+    select.focus();
+    select.addEventListener('blur', () => saveEdit(td, field, id, select.value, select.options[select.selectedIndex].text));
+    select.addEventListener('change', () => saveEdit(td, field, id, select.value, select.options[select.selectedIndex].text));
+  } else {
+    const input = document.createElement('input');
+    input.value = currentVal;
+    td.innerHTML = '';
+    td.appendChild(input);
+    input.focus();
+    input.addEventListener('blur', () => saveEdit(td, field, id, input.value, currentVal));
+    input.addEventListener('keydown', (e) => { if (e.key === 'Enter') saveEdit(td, field, id, input.value, currentVal); });
+  }
+}
+
+async function saveEdit(td, field, id, newVal, displayVal) {
+  if (displayVal !== undefined) {
+    td.innerText = displayVal;
+  } else {
+    td.innerText = newVal;
+  }
+  try {
+    await request(API + '/products/' + id, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ [field]: field === 'price1' || field === 'price2' || field === 'category_id' ? Number(newVal) : newVal })
+    });
+    showToast('更新成功');
+  } catch (e) {
+    loadProducts(productsPage); // 刷新恢复
+  }
+}
+
+async function deleteProduct(id) {
+  if (!confirm('确认删除此产品？')) return;
+  await request(API + '/products/' + id, { method: 'DELETE' });
+  loadProducts(productsPage);
+  showToast('产品已删除');
+}
+
+async function batchDeleteProducts() {
+  const ids = getSelectedProductIds();
+  if (!ids.length) return showToast('请至少选择一个产品', 'error');
+  if (!confirm(`确认删除 ${ids.length} 个产品？`)) return;
+  await request(API + '/products/batch/delete', {
+    method: 'DELETE',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ ids })
+  });
+  loadProducts(productsPage);
+  showToast(`已删除 ${ids.length} 个产品`);
+}
+
+async function batchUpdateProducts() {
+  const ids = getSelectedProductIds();
+  if (!ids.length) return showToast('请选择产品', 'error');
+  const price1 = prompt('新价格1 (留空不修改)');
+  const price2 = prompt('新价格2 (留空不修改)');
+  const categoryId = prompt('新分类ID (留空不修改)');
+  if (price1 === null && price2 === null && categoryId === null) return;
+  const body = { ids };
+  if (price1 !== null && price1 !== '') body.price1 = parseFloat(price1);
+  if (price2 !== null && price2 !== '') body.price2 = parseFloat(price2);
+  if (categoryId !== null && categoryId !== '') body.category_id = parseInt(categoryId);
+  await request(API + '/products/batch/update', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+  loadProducts(productsPage);
+  showToast('批量修改已应用');
+}
+
+function getSelectedProductIds() {
+  return [...document.querySelectorAll('.product-check:checked')].map(cb => parseInt(cb.value));
+}
+
+function renderProductsPagination(total, limit) {
+  const totalPages = Math.ceil(total / limit);
+  const pagDiv = document.getElementById('productsPagination');
+  if (totalPages <= 1) { pagDiv.innerHTML = ''; return; }
+  let html = '';
+  for (let i = 1; i <= totalPages; i++) {
+    html += `<button class="page-btn ${i === productsPage ? 'active' : ''}" onclick="loadProducts(${i})">${i}</button>`;
+  }
+  pagDiv.innerHTML = html;
+}
+
+// 产品模态框
+function openProductModal(product = null) {
+  const modal = document.getElementById('productModal');
+  const form = document.getElementById('productForm');
+  form.reset();
+  form.elements['id'].value = product ? product.id : '';
+  document.getElementById('productModalTitle').textContent = product ? '编辑产品' : '添加产品';
+  if (product) {
+    form.elements['sku'].value = product.sku || '';
+    form.elements['name_zh'].value = product.name_zh || '';
+    form.elements['name_en'].value = product.name_en || '';
+    form.elements['price1'].value = product.price1 || 0;
+    form.elements['price2'].value = product.price2 || 0;
+    form.elements['category_id'].value = product.category_id || 0;
+    document.getElementById('currentProductImage').innerHTML = product.image ? `<img src="${product.image}" class="image-thumb">` : '';
+  } else {
+    document.getElementById('currentProductImage').innerHTML = '';
+  }
+  populateCategorySelect();
+  modal.classList.add('active');
+}
+
+function closeProductModal() {
+  document.getElementById('productModal').classList.remove('active');
+}
+
+async function editProduct(id) {
+  const product = await request(API + '/products/' + id);
+  openProductModal(product);
+}
+
+async function editProductImage(id) {
+  // 简单的图片更换：触发文件选择
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'image/*';
+  input.onchange = async () => {
+    const formData = new FormData();
+    formData.append('image', input.files[0]);
+    try {
+      await fetch(API + '/products/' + id, { method: 'PUT', body: formData });
+      showToast('图片更新成功');
+      loadProducts(productsPage);
+    } catch (e) { showToast('图片更新失败', 'error'); }
+  };
+  input.click();
+}
+
+document.getElementById('productForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const formData = new FormData(e.target);
+  const id = formData.get('id');
+  const isEdit = !!id;
+  const url = isEdit ? API + '/products/' + id : API + '/products';
+  const method = isEdit ? 'PUT' : 'POST';
+  
+  const imageFile = document.getElementById('productImageFile').files[0];
+  if (imageFile) formData.append('image', imageFile);
+  
+  try {
+    await fetch(url, { method, body: formData });
+    closeProductModal();
+    loadProducts(productsPage);
+    showToast(isEdit ? '产品已更新' : '产品已添加');
+  } catch (e) {
+    showToast('保存失败', 'error');
+  }
+});
+
+// Excel导入 (SSE)
+function handleExcelUpload(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const progressDiv = document.getElementById('importProgress');
+  const fill = document.getElementById('progressFill');
+  const text = document.getElementById('progressText');
+  progressDiv.style.display = 'block';
+  
+  const formData = new FormData();
+  formData.append('file', file);
+  
+  const xhr = new XMLHttpRequest();
+  xhr.open('POST', API + '/products/import');
+  xhr.setRequestHeader('Accept', 'text/event-stream');
+  
+  let lastIndex = 0;
+  xhr.onprogress = function() {
+    const responseText = xhr.responseText;
+    const newPart = responseText.substring(lastIndex);
+    lastIndex = responseText.length;
+    const lines = newPart.split('\n').filter(l => l.startsWith('data: '));
+    if (lines.length > 0) {
+      const lastLine = lines[lines.length-1];
+      try {
+        const data = JSON.parse(lastLine.replace('data: ', ''));
+        const pct = data.total > 0 ? (data.processed / data.total * 100) : 0;
+        fill.style.width = pct + '%';
+        text.textContent = `已处理: ${data.processed}/${data.total} 成功: ${data.success} 跳过: ${data.skipped}`;
+        if (data.done) {
+          showToast('导入完成');
+          setTimeout(() => progressDiv.style.display = 'none', 3000);
+          loadProducts();
         }
-      };
-      xhr.send(formData);
+      } catch(e) {}
     }
+  };
+  xhr.send(formData);
+}
 
-    // 分类、轮播、设置等函数类似，为节省篇幅仅提供核心结构
-    // 实际项目请扩展完整实现
-    checkAuth();
-  </script>
+// ========== 分类管理 ==========
+async function loadCategoriesCache() {
+  const res = await request(API + '/categories');
+  categoriesCache = res;
+}
+
+function populateCategorySelect() {
+  const select = document.getElementById('productCatSelect');
+  select.innerHTML = '<option value="0">无分类</option>' + 
+    categoriesCache.map(c => `<option value="${c.id}">${c.name_zh || c.name_en}</option>`).join('');
+}
+
+async function loadCategories() {
+  await loadCategoriesCache();
+  const tbody = document.getElementById('categoriesTbody');
+  tbody.innerHTML = categoriesCache.map(c => `
+    <tr>
+      <td>${c.id}</td>
+      <td>${esc(c.name_zh)}</td>
+      <td>${esc(c.name_en)}</td>
+      <td>
+        <button class="btn btn-outline" onclick="editCategory(${c.id})">✏️</button>
+        <button class="btn btn-danger" onclick="deleteCategory(${c.id})">🗑️</button>
+      </td>
+    </tr>`).join('');
+}
+
+function openCategoryModal(category = null) {
+  const modal = document.getElementById('categoryModal');
+  const form = document.getElementById('categoryForm');
+  form.reset();
+  form.elements['id'].value = category ? category.id : '';
+  document.getElementById('categoryModalTitle').textContent = category ? '编辑分类' : '新增分类';
+  if (category) {
+    form.elements['name_zh'].value = category.name_zh || '';
+    form.elements['name_en'].value = category.name_en || '';
+  }
+  modal.classList.add('active');
+}
+
+function closeCategoryModal() {
+  document.getElementById('categoryModal').classList.remove('active');
+}
+
+async function editCategory(id) {
+  const cat = categoriesCache.find(c => c.id == id);
+  if (cat) openCategoryModal(cat);
+}
+
+async function deleteCategory(id) {
+  if (!confirm('删除此分类后，相关产品将归为“无分类”，确认删除？')) return;
+  await request(API + '/categories/' + id, { method: 'DELETE' });
+  loadCategories();
+  showToast('分类已删除');
+}
+
+document.getElementById('categoryForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const formData = new FormData(e.target);
+  const id = formData.get('id');
+  const data = { name_zh: formData.get('name_zh'), name_en: formData.get('name_en') };
+  const url = id ? API + '/categories/' + id : API + '/categories';
+  const method = id ? 'PUT' : 'POST';
+  await request(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+  closeCategoryModal();
+  loadCategories();
+  showToast(id ? '分类已更新' : '分类已添加');
+});
+
+// ========== 轮播图管理 ==========
+async function loadBanners() {
+  const res = await request(API + '/banners');
+  const tbody = document.getElementById('bannersTbody');
+  tbody.innerHTML = res.map(b => `
+    <tr>
+      <td><img src="${b.image}" class="image-thumb" style="width:80px;height:60px;"></td>
+      <td><input type="number" value="${b.sort_order}" style="width:60px" onchange="updateBanner(${b.id}, 'sort_order', this.value)"></td>
+      <td>
+        <select onchange="updateBanner(${b.id}, 'enabled', this.value)">
+          <option value="1" ${b.enabled == 1 ? 'selected' : ''}>启用</option>
+          <option value="0" ${b.enabled == 0 ? 'selected' : ''}>禁用</option>
+        </select>
+      </td>
+      <td><button class="btn btn-danger" onclick="deleteBanner(${b.id})">🗑️</button></td>
+    </tr>`).join('');
+}
+
+async function updateBanner(id, field, value) {
+  await request(API + '/banners/' + id, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ [field]: field === 'sort_order' ? parseInt(value) : parseInt(value) })
+  });
+  showToast('已更新');
+}
+
+async function deleteBanner(id) {
+  if (!confirm('删除此轮播图？')) return;
+  await request(API + '/banners/' + id, { method: 'DELETE' });
+  loadBanners();
+}
+
+async function uploadBanner() {
+  const file = document.getElementById('bannerFileInput').files[0];
+  if (!file) return;
+  const formData = new FormData();
+  formData.append('image', file);
+  formData.append('sort_order', '0');
+  formData.append('enabled', '1');
+  await fetch(API + '/banners', { method: 'POST', body: formData });
+  loadBanners();
+  showToast('轮播图已上传');
+}
+
+// ========== 网站设置 ==========
+async function loadSettings() {
+  const res = await request(API + '/settings');
+  document.getElementById('siteTitleDisplay').textContent = res.site_title || '产品展示系统';
+  // 根据验证码设置显示/隐藏验证码区域
+  const captchaGroup = document.getElementById('captchaGroup');
+  if (res.captcha_enabled === 'false') {
+    captchaGroup.style.display = 'none';
+  } else {
+    captchaGroup.style.display = 'flex';
+  }
+  return res;
+}
+
+async function loadSettingsToForm() {
+  const settings = await loadSettings();
+  const form = document.getElementById('settingsForm');
+  for (const key in settings) {
+    if (form.elements[key]) {
+      form.elements[key].value = settings[key];
+    }
+  }
+}
+
+document.getElementById('settingsForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const formData = new FormData(e.target);
+  const data = {};
+  for (const [key, value] of formData.entries()) {
+    data[key] = value;
+  }
+  await request(API + '/settings', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+  });
+  showToast('设置已保存');
+  loadSettings(); // 刷新标题等
+});
+
+// ========== 启动 ==========
+checkAuth();
+</script>
 </body>
 </html>
