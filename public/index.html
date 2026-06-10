@@ -175,11 +175,13 @@
     }
 
     async function loadSettings() {
-      const res = await fetch('/api/settings?_=' + Date.now());
-      state.settings = await res.json();
-      document.getElementById('siteTitle').textContent = state.settings.site_title || 'Product Catalog';
-      updateCopyright();
-    }
+  const res = await fetch('/api/settings?_=' + Date.now());
+  state.settings = await res.json();
+  const title = state.settings.site_title || 'Product Catalog';
+  document.getElementById('siteTitle').textContent = title;
+  document.title = title;  // 👈 更新浏览器标签栏标题
+  updateCopyright();
+   }
 
     async function loadCategories() {
       const res = await fetch('/api/categories?_=' + Date.now());
