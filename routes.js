@@ -12,13 +12,13 @@ const fs = require('fs');
 // ====================== 验证码 ======================
 router.get('/captcha', (req, res) => {
   const captcha = svgCaptcha.create({
-    size: 4,
-    ignoreChars: '0o1il',
+    size: 4,                   // 4位
+    charPreset: '0123456789',  // 纯数字
     noise: 2,
     color: true,
     background: '#f0f0f0'
   });
-  req.session.captcha = captcha.text.toLowerCase();
+  req.session.captcha = captcha.text;  // 纯数字，无需toLowerCase
   res.type('svg');
   res.status(200).send(captcha.data);
 });
