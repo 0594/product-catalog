@@ -37,30 +37,24 @@
 
     /* 产品网格 */
     .product-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-      gap: 1.2rem;
-    }
-    @media (max-width: 640px) {
-      .product-grid {
-        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-        gap: 0.8rem;
-      }
-      .header-inner { padding: 0.5rem; }
-      .site-title { font-size: 1.2rem; }
-      .controls { margin-top: 0.5rem; }
-      .product-card { border-radius: 6px; }
-      .product-image { height: 160px; }
-      .product-info { padding: 0.5rem; }
-      .product-name { font-size: 0.9rem; margin: 0.15rem 0; }
-      .product-sku { font-size: 0.7rem; }
-      .price1 { font-size: 1rem; }
-      .price2 { font-size: 0.75rem; }
-    }
-    @media (max-width: 340px) {
-      .product-grid { grid-template-columns: repeat(2, 1fr); }
-    }
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1.2rem;
+}
 
+/* 移动端自适应 */
+@media (max-width: 640px) {
+  .product-grid {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 0.8rem;
+  }
+}
+/* 极窄屏回退 */
+@media (max-width: 340px) {
+  .product-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
     .product-card { background: var(--card-bg); border-radius: 10px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.05); transition: transform 0.2s; }
     .product-card:hover { transform: translateY(-4px); }
     .product-image { width: 100%; height: 200px; display: flex; align-items: center; justify-content: center; background: #f1f5f9; cursor: pointer; }
