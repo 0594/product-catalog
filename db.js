@@ -50,8 +50,9 @@ const defaultSettings = {
   default_image: '/images/no-image.png',
   currency_symbol: '¥',
   captcha_enabled: 'true',
-  copyright: '© 2026 Product Catalog. All rights reserved.', // 新增
-  admin_path: '/admin'      // 新增
+  copyright: '© 2026 Product Catalog. All rights reserved.', // 新增版权
+  admin_path: '/admin',            // 新增自定义入口
+  admin_password: 'admin123'       // 新增默认密码
 };
 
 const insertSetting = db.prepare('INSERT OR IGNORE INTO settings (key, value) VALUES (?, ?)');
