@@ -32,7 +32,7 @@
 
     .container { max-width: 1280px; margin: 0 auto; padding: 1rem; }
 
-    /* 产品网格 - 桌面端自适应列数，移动端固定3列 */
+    /* 产品网格 - 桌面端自适应，移动端固定 2 列 */
     .product-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
@@ -40,17 +40,17 @@
     }
     @media (max-width: 640px) {
       .product-grid {
-        grid-template-columns: repeat(3, 1fr);
-        gap: 0.6rem;
+        grid-template-columns: repeat(2, 1fr);   /* 一排 2 个 */
+        gap: 0.8rem;
       }
       .product-card { border-radius: 6px; }
-      .product-image { height: 120px; }          /* 移动端高度缩小 */
-      .product-info { padding: 0.4rem; }
-      .product-name { font-size: 0.8rem; }
-      .product-sku { font-size: 0.65rem; }
-      .price1 { font-size: 0.85rem; }
-      .price2 { font-size: 0.7rem; }
-      .search-input { width: 120px; }
+      .product-image { height: 160px; }           /* 适当增加高度，减少空白 */
+      .product-info { padding: 0.5rem; }
+      .product-name { font-size: 0.9rem; }
+      .product-sku { font-size: 0.7rem; }
+      .price1 { font-size: 1rem; }
+      .price2 { font-size: 0.75rem; }
+      .search-input { width: 130px; }
       .header-inner { padding: 0.5rem; }
       .site-title { font-size: 1.2rem; }
     }
@@ -108,7 +108,7 @@
   <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
   <script>
     const state = {
-      lang: (navigator.language || 'zh').startsWith('zh') ? 'zh' : 'en',  // 跟随系统语言
+      lang: (navigator.language || 'zh').startsWith('zh') ? 'zh' : 'en',
       currentPage: 1,
       products: [],
       total: 0,
@@ -122,7 +122,6 @@
 
     const t = (zh, en) => state.lang === 'zh' ? zh : en;
 
-    // 更新搜索框和分类默认选项的文字
     function updateUILanguage() {
       const searchInput = document.getElementById('searchInput');
       searchInput.placeholder = t('搜索SKU/名称', 'Search SKU/Name');
@@ -136,31 +135,26 @@
       }
     }
 
-    // 加载设置
     async function loadSettings() {
       const res = await fetch('/api/settings');
       state.settings = await res.json();
       document.getElementById('siteTitle').textContent = state.settings.site_title || 'Product Catalog';
     }
 
-    // 加载分类
     async function loadCategories() {
       const res = await fetch('/api/categories');
       const categories = await res.json();
       const select = document.getElementById('categoryFilter');
-      // 清空除了第一个（全部分类）外的选项
       select.querySelectorAll('option:not([value="all"])').forEach(opt => opt.remove());
-      
       categories.forEach(cat => {
         const option = document.createElement('option');
         option.value = cat.id;
         option.textContent = t(cat.name_zh, cat.name_en) || `分类 ${cat.id}`;
         select.appendChild(option);
       });
-      updateUILanguage(); // 确保第一个选项文字正确
+      updateUILanguage();
     }
 
-    // 加载轮播
     async function loadBanners() {
       const res = await fetch('/api/banners');
       const banners = await res.json();
@@ -174,7 +168,6 @@
       }
     }
 
-    // 加载产品
     async function loadProducts(page = 1) {
       const category = document.getElementById('categoryFilter').value;
       const search = document.getElementById('searchInput').value;
@@ -241,8 +234,8 @@
 
     document.getElementById('langToggle').addEventListener('click', () => {
       setLang(state.lang === 'zh' ? 'en' : 'zh');
-      loadCategories();  // 重新加载分类下拉文字
-      renderProducts();  // 重新渲染产品卡片名称
+      loadCategories();
+      renderProducts();
     });
 
     let searchTimer;
@@ -253,7 +246,6 @@
 
     document.getElementById('categoryFilter').addEventListener('change', () => loadProducts(1));
 
-    // 初始加载
     (async () => {
       await loadSettings();
       await loadCategories();
