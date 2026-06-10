@@ -557,14 +557,17 @@ function resetImportUI() {
 
 // 文件选择处理（增强版）
 function handleFileSelect(input) {
-  resetImportUI(); // 先清空旧状态
+  // 先清空，保证再次选择同一文件也能触发 change
+  input.value = '';
+  
   if (input.files.length > 0) {
     pendingExcelFile = input.files[0];
     document.getElementById('executeImportBtn').style.display = 'inline-block';
     document.getElementById('cancelImportBtn').style.display = 'inline-block';
+  } else {
+    cancelImport();
   }
 }
-
 // 执行导入（防重复、强制刷新UI）
 function executeImport() {
   if (!pendingExcelFile) return showToast('没有待导入的文件', 'error');
@@ -623,6 +626,15 @@ function executeImport() {
   xhr.send(formData);
 }
 
+  function cancelImport() {
+  pendingExcelFile = null;
+  const fileInput = document.getElementById('excelFileInput');
+  fileInput.value = '';
+  document.getElementById('executeImportBtn').style.display = 'none';
+  document.getElementById('cancelImportBtn').style.display = 'none';
+  document.getElementById('importProgress').style.display = 'none';
+}
+  
 // 取消导入（绑定按钮点击）
 document.getElementById('cancelImportBtn').addEventListener('click', resetImportUI);
 checkAuth();
