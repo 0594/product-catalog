@@ -23,39 +23,20 @@
     }
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif; background: var(--bg); color: var(--text); }
-    
-    /* 登录页 */
-    .login-container {
-      max-width: 400px; margin: 80px auto; background: var(--card); padding: 2rem;
-      border-radius: var(--radius); box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-    }
+    .login-container { max-width: 400px; margin: 80px auto; background: var(--card); padding: 2rem; border-radius: var(--radius); box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
     .login-container h2 { text-align: center; margin-bottom: 1.5rem; }
     .captcha-row { display: flex; gap: 0.5rem; align-items: center; margin-bottom: 1rem; }
     .captcha-row img { cursor: pointer; border: 1px solid var(--border); border-radius: 4px; height: 40px; }
     .captcha-row input { flex: 1; }
-    
-    /* 管理布局 */
     .admin-wrapper { display: none; }
-    .topbar {
-      background: var(--card); padding: 0.8rem 1.5rem; display: flex;
-      justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border);
-      margin-bottom: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.04);
-    }
+    .topbar { background: var(--card); padding: 0.8rem 1.5rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); margin-bottom: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
     .topbar h1 { font-size: 1.5rem; }
     .tabs { display: flex; gap: 0.3rem; margin: 0 1.5rem 1.5rem; }
-    .tab {
-      padding: 0.5rem 1.2rem; border-radius: 20px; cursor: pointer;
-      background: var(--border); font-size: 0.9rem; transition: all 0.2s;
-    }
+    .tab { padding: 0.5rem 1.2rem; border-radius: 20px; cursor: pointer; background: var(--border); font-size: 0.9rem; transition: all 0.2s; }
     .tab.active { background: var(--primary); color: white; }
     .tab-content { display: none; padding: 0 1.5rem; }
     .tab-content.active { display: block; }
-    
-    /* 通用组件 */
-    .btn {
-      padding: 0.4rem 0.9rem; border: none; border-radius: 5px; cursor: pointer;
-      font-size: 0.85rem; font-weight: 500; transition: opacity 0.2s;
-    }
+    .btn { padding: 0.4rem 0.9rem; border: none; border-radius: 5px; cursor: pointer; font-size: 0.85rem; font-weight: 500; transition: opacity 0.2s; }
     .btn:hover { opacity: 0.9; }
     .btn-primary { background: var(--primary); color: white; }
     .btn-danger { background: var(--danger); color: white; }
@@ -63,13 +44,8 @@
     .btn-warning { background: var(--warning); color: white; }
     .btn-outline { background: white; border: 1px solid var(--border); color: var(--text); }
     .btn-group { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1rem; align-items: center; }
-    
-    input, select, textarea {
-      padding: 0.5rem 0.7rem; border: 1px solid var(--border); border-radius: 4px;
-      font-size: 0.9rem; outline: none; background: white;
-    }
+    input, select, textarea { padding: 0.5rem 0.7rem; border: 1px solid var(--border); border-radius: 4px; font-size: 0.9rem; outline: none; background: white; }
     input:focus, select:focus { border-color: var(--primary); box-shadow: 0 0 0 2px var(--primary-light); }
-    
     table { width: 100%; border-collapse: collapse; background: var(--card); border-radius: var(--radius); overflow: hidden; }
     th, td { padding: 0.6rem 0.5rem; border-bottom: 1px solid var(--border); font-size: 0.85rem; text-align: left; }
     th { background: #f8fafc; font-weight: 600; }
@@ -81,32 +57,25 @@
     .pagination { display: flex; gap: 0.5rem; justify-content: center; margin-top: 1rem; }
     .page-btn { padding: 0.3rem 0.7rem; background: var(--card); border: 1px solid var(--border); border-radius: 4px; cursor: pointer; }
     .page-btn.active { background: var(--primary); color: white; }
-    
-    /* 进度条 */
     .progress-container { margin: 0.5rem 0; }
     .progress-bar { height: 20px; background: #e2e8f0; border-radius: 10px; overflow: hidden; }
     .progress-fill { height: 100%; background: var(--primary); width: 0%; transition: width 0.3s; border-radius: 10px; }
     .progress-text { font-size: 0.8rem; color: var(--text-light); margin-top: 0.2rem; }
-    
-    /* 通知 */
     .toast { position: fixed; top: 20px; right: 20px; background: var(--card); padding: 0.8rem 1.2rem; border-radius: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); z-index: 2000; display: none; }
     .toast.show { display: block; animation: fadeIn 0.3s; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
-    
-    /* 内联添加行 */
     .inline-add { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; margin-bottom: 1rem; }
     .inline-add input, .inline-add select { width: 130px; }
     .delete-img-btn { background: none; border: none; color: var(--danger); cursor: pointer; font-size: 0.75rem; margin-left: 0.2rem; }
+    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); z-index: 1000; justify-content: center; align-items: center; }
+    .modal.active { display: flex; }
+    .modal-content { background: var(--card); border-radius: var(--radius); padding: 1.5rem; max-width: 400px; width: 90%; }
   </style>
 </head>
 <body>
-
-<!-- 登录界面 -->
 <div class="login-container" id="loginBox">
   <h2>🔐 管理员登录</h2>
-  <div class="form-group">
-    <input type="password" id="passwordInput" placeholder="请输入密码" onkeydown="if(event.key==='Enter') login()">
-  </div>
+  <div class="form-group"><input type="password" id="passwordInput" placeholder="请输入密码" onkeydown="if(event.key==='Enter') login()"></div>
   <div class="captcha-row" id="captchaGroup">
     <input type="text" id="captchaInput" placeholder="验证码" onkeydown="if(event.key==='Enter') login()">
     <img id="captchaImg" src="/api/captcha" alt="验证码" onclick="refreshCaptcha()">
@@ -114,13 +83,11 @@
   <button class="btn btn-primary" style="width:100%;margin-top:0.5rem" onclick="login()">登录</button>
 </div>
 
-<!-- 管理后台 -->
 <div class="admin-wrapper" id="adminBox">
   <div class="topbar">
     <h1 id="siteTitleDisplay">产品展示系统</h1>
     <button class="btn btn-outline" onclick="logout()">退出登录</button>
   </div>
-  
   <div class="tabs">
     <div class="tab active" data-tab="products">📦 产品管理</div>
     <div class="tab" data-tab="categories">🏷️ 分类管理</div>
@@ -130,7 +97,6 @@
 
   <!-- 产品管理 -->
   <div class="tab-content active" id="tab-products">
-    <!-- 操作按钮行 -->
     <div class="btn-group">
       <button class="btn btn-danger" onclick="batchDeleteProducts()">🗑️ 批量删除</button>
       <button class="btn btn-outline" onclick="batchUpdateProducts()">✏️ 批量修改</button>
@@ -140,14 +106,10 @@
       <button class="btn btn-danger" id="cancelImportBtn" style="display:none;" onclick="cancelImport()">❌ 取消</button>
       <a href="/api/products/template" class="btn btn-outline">📄 下载模板</a>
     </div>
-
-    <!-- 进度条 -->
     <div class="progress-container" id="importProgress" style="display:none">
       <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
       <div class="progress-text" id="progressText"></div>
     </div>
-
-    <!-- 内联添加行（包含图片上传） -->
     <div class="inline-add">
       <input type="text" id="newSKU" placeholder="SKU *" required>
       <input type="text" id="newNameZh" placeholder="中文名称">
@@ -158,8 +120,6 @@
       <input type="file" id="newImage" accept="image/*" style="width:150px;">
       <button class="btn btn-primary" onclick="addProductInline()">➕ 添加</button>
     </div>
-
-    <!-- 产品表格 -->
     <div style="overflow-x:auto;">
       <table id="productsTable">
         <thead>
@@ -181,9 +141,13 @@
     <div class="pagination" id="productsPagination"></div>
   </div>
 
-  <!-- 分类管理 -->
+  <!-- 分类管理（内联添加） -->
   <div class="tab-content" id="tab-categories">
-    <button class="btn btn-primary" onclick="openCategoryModal()" style="margin-bottom:1rem;">➕ 新增分类</button>
+    <div class="inline-add">
+      <input type="text" id="newCatNameZh" placeholder="中文名称">
+      <input type="text" id="newCatNameEn" placeholder="英文名称">
+      <button class="btn btn-primary" onclick="addCategoryInline()">➕ 添加分类</button>
+    </div>
     <table>
       <thead><tr><th>ID</th><th>中文名称</th><th>英文名称</th><th>操作</th></tr></thead>
       <tbody id="categoriesTbody"></tbody>
@@ -206,158 +170,83 @@
   <!-- 网站设置 -->
   <div class="tab-content" id="tab-settings">
     <form id="settingsForm" style="max-width:500px;">
-      <div class="form-group">
-        <label>网站标题</label>
-        <input name="site_title" required>
-      </div>
-      <div class="form-group">
-        <label>每页产品数量</label>
-        <input type="number" name="products_per_page" min="4" max="100">
-      </div>
-      <div class="form-group">
-        <label>价格显示模式</label>
-        <select name="price_display">
-          <option value="both">双价格</option>
-          <option value="price1">仅价格1</option>
-          <option value="price2">仅价格2</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label>默认产品图片（路径）</label>
-        <input name="default_image" placeholder="/images/no-image.png">
-      </div>
-      <div class="form-group">
-        <label>货币符号</label>
-        <input name="currency_symbol" placeholder="¥">
-      </div>
-      <div class="form-group">
-        <label>启用验证码</label>
-        <select name="captcha_enabled">
-          <option value="true">开启</option>
-          <option value="false">关闭</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label>底部版权信息</label>
-        <input name="copyright" placeholder="© 2024 Product Catalog">
-      </div>
+      <div class="form-group"><label>网站标题</label><input name="site_title" required></div>
+      <div class="form-group"><label>每页产品数量</label><input type="number" name="products_per_page" min="4" max="100"></div>
+      <div class="form-group"><label>价格显示模式</label><select name="price_display"><option value="both">双价格</option><option value="price1">仅价格1</option><option value="price2">仅价格2</option></select></div>
+      <div class="form-group"><label>默认产品图片（路径）</label><input name="default_image"></div>
+      <div class="form-group"><label>货币符号</label><input name="currency_symbol"></div>
+      <div class="form-group"><label>启用验证码</label><select name="captcha_enabled"><option value="true">开启</option><option value="false">关闭</option></select></div>
+      <div class="form-group"><label>底部版权信息</label><input name="copyright"></div>
       <button type="submit" class="btn btn-primary">保存设置</button>
     </form>
   </div>
 </div>
 
-<!-- 分类编辑模态框 -->
-<div class="modal" id="categoryModal">
-  <div class="modal-content">
-    <h3 id="categoryModalTitle">新增分类</h3>
-    <form id="categoryForm">
-      <input type="hidden" name="id">
-      <div class="form-group"><label>中文名称</label><input name="name_zh"></div>
-      <div class="form-group"><label>英文名称</label><input name="name_en"></div>
-      <div style="display:flex;gap:0.5rem;justify-content:flex-end;">
-        <button type="button" class="btn btn-outline" onclick="closeCategoryModal()">取消</button>
-        <button type="submit" class="btn btn-primary">保存</button>
-      </div>
-    </form>
-  </div>
-</div>
-
-<!-- Toast通知 -->
 <div class="toast" id="toast"></div>
 
 <script>
-// ========== 全局状态 ==========
 const API = '/api';
 let productsPage = 1;
 let categoriesCache = [];
 
-// ========== 工具函数 ==========
-function showToast(msg, type = 'success') {
-  const toast = document.getElementById('toast');
-  toast.textContent = msg;
-  toast.style.color = type === 'error' ? '#dc2626' : '#16a34a';
-  toast.classList.add('show');
-  setTimeout(() => toast.classList.remove('show'), 3000);
+function showToast(msg, type='success') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.color = type==='error' ? '#dc2626' : '#16a34a';
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 3000);
 }
 
-async function request(url, options = {}) {
-  try {
-    const res = await fetch(url, options);
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({ error: '请求失败' }));
-      throw new Error(err.error || `HTTP ${res.status}`);
-    }
-    return await res.json();
-  } catch (e) {
-    showToast(e.message, 'error');
-    throw e;
+async function request(url, options={}) {
+  const res = await fetch(url, options);
+  if (!res.ok) {
+    const err = await res.json().catch(()=>({error:'请求失败'}));
+    throw new Error(err.error || `HTTP ${res.status}`);
   }
+  return res.json();
 }
 
-// ========== 登录管理 ==========
-function refreshCaptcha() {
-  document.getElementById('captchaImg').src = API + '/captcha?' + Date.now();
-}
-
+function refreshCaptcha() { document.getElementById('captchaImg').src = API+'/captcha?'+Date.now(); }
 async function login() {
-  const password = document.getElementById('passwordInput').value;
-  const captcha = document.getElementById('captchaInput')?.value;
+  const pwd = document.getElementById('passwordInput').value;
+  const cap = document.getElementById('captchaInput')?.value;
   try {
-    await request(API + '/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ password, captcha })
-    });
-    document.getElementById('loginBox').style.display = 'none';
-    document.getElementById('adminBox').style.display = 'block';
+    await request(API+'/login', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({password:pwd, captcha:cap}) });
+    document.getElementById('loginBox').style.display='none';
+    document.getElementById('adminBox').style.display='block';
     initAdmin();
-  } catch (e) {
-    refreshCaptcha();
-  }
+  } catch(e) { refreshCaptcha(); }
 }
-
-async function logout() {
-  await request(API + '/logout', { method: 'POST' });
-  location.reload();
-}
-
+async function logout() { await request(API+'/logout',{method:'POST'}); location.reload(); }
 async function checkAuth() {
-  const res = await fetch(API + '/check-auth');
-  const data = await res.json();
-  if (data.loggedIn) {
-    document.getElementById('loginBox').style.display = 'none';
-    document.getElementById('adminBox').style.display = 'block';
-    initAdmin();
-  }
+  const r = await fetch(API+'/check-auth'); const d = await r.json();
+  if(d.loggedIn) { document.getElementById('loginBox').style.display='none'; document.getElementById('adminBox').style.display='block'; initAdmin(); }
 }
 
-// ========== 初始化后台 ==========
 async function initAdmin() {
   await loadSettings();
   await loadCategoriesCache();
   document.querySelector('.tab[data-tab="products"]').click();
 }
 
-// ========== 标签切换 ==========
 document.querySelectorAll('.tab').forEach(tab => {
   tab.addEventListener('click', function() {
-    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
     this.classList.add('active');
     const target = this.dataset.tab;
-    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-    document.getElementById('tab-' + target).classList.add('active');
-    
-    if (target === 'products') loadProducts();
-    else if (target === 'categories') loadCategories();
-    else if (target === 'banners') loadBanners();
-    else if (target === 'settings') loadSettingsToForm();
+    document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));
+    document.getElementById('tab-'+target).classList.add('active');
+    if(target==='products') loadProducts();
+    else if(target==='categories') loadCategories();
+    else if(target==='banners') loadBanners();
+    else if(target==='settings') loadSettingsToForm();
   });
 });
 
-// ========== 产品管理 ==========
-async function loadProducts(page = 1) {
+// ========== 产品 ==========
+async function loadProducts(page=1) {
   productsPage = page;
-  const res = await request(API + '/products?page=' + page + '&_=' + Date.now());
+  const res = await request(API+'/products?page='+page+'&_='+Date.now());
   renderProducts(res.products);
   renderProductsPagination(res.total, res.limit);
   populateInlineCategorySelect();
@@ -365,15 +254,12 @@ async function loadProducts(page = 1) {
 
 function renderProducts(products) {
   const tbody = document.querySelector('#productsTable tbody');
-  tbody.innerHTML = products.map(p => {
+  tbody.innerHTML = products.map(p=>{
     const catName = getCategoryName(p.category_id);
-    return `
-    <tr>
+    return `<tr>
       <td><input type="checkbox" value="${p.id}" class="product-check"></td>
-      <td>
-        <button class="btn btn-danger" style="padding:0.2rem 0.5rem;font-size:0.75rem" onclick="deleteProduct(${p.id})">🗑️</button>
-      </td>
-      <td style="display:flex; align-items:center; gap:0.2rem;">
+      <td><button class="btn btn-danger" style="padding:0.2rem 0.5rem;font-size:0.75rem" onclick="deleteProduct(${p.id})">🗑️</button></td>
+      <td style="display:flex;align-items:center;gap:0.2rem;">
         <img src="${p.image || '/images/no-image.png'}" class="image-thumb" onclick="editProductImage(${p.id})" title="更换图片">
         ${p.image ? `<button class="delete-img-btn" onclick="deleteProductImage(${p.id})" title="删除图片">✕</button>` : ''}
       </td>
@@ -385,25 +271,17 @@ function renderProducts(products) {
       <td class="editable" data-field="category_id" data-id="${p.id}" data-type="select">${catName} (${p.category_id})</td>
     </tr>`;
   }).join('');
-  
-  // 绑定双击编辑
-  document.querySelectorAll('.editable').forEach(td => {
-    td.addEventListener('dblclick', makeEditable);
-  });
-  
+  document.querySelectorAll('.editable').forEach(td=>td.addEventListener('dblclick', makeEditable));
   document.getElementById('selectAllProducts').onclick = function() {
-    document.querySelectorAll('.product-check').forEach(cb => cb.checked = this.checked);
+    document.querySelectorAll('.product-check').forEach(cb=>cb.checked = this.checked);
   };
 }
 
-function esc(str) {
-  return String(str).replace(/</g, '&lt;').replace(/>/g, '&gt;');
-}
-
+function esc(str) { return String(str).replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 function getCategoryName(id) {
-  if (id == 0) return '无分类';
-  const cat = categoriesCache.find(c => c.id == id);
-  return cat ? (cat.name_zh || cat.name_en || id) : id;
+  if(id==0) return '无分类';
+  const cat = categoriesCache.find(c=>c.id==id);
+  return cat ? (cat.name_zh||cat.name_en||id) : id;
 }
 
 function makeEditable(e) {
@@ -411,245 +289,116 @@ function makeEditable(e) {
   const field = td.dataset.field;
   const id = td.dataset.id;
   const currentVal = td.innerText.trim();
-  const type = td.dataset.type;
-  
-  if (type === 'select') {
-    // 获取当前产品的分类ID，从数据中或通过属性
-    const currentCatId = td.getAttribute('data-catid') || currentVal.match(/\d+/)?.[0] || 0;
+  if(td.dataset.type==='select') {
     const select = document.createElement('select');
-    select.innerHTML = `<option value="0">无分类</option>` + 
-      categoriesCache.map(c => `<option value="${c.id}">${c.name_zh || c.name_en}</option>`).join('');
-    select.value = currentCatId;
-    td.innerHTML = '';
-    td.appendChild(select);
-    select.focus();
-    select.addEventListener('blur', () => saveEdit(td, field, id, select.value, select.options[select.selectedIndex].text));
-    select.addEventListener('change', () => saveEdit(td, field, id, select.value, select.options[select.selectedIndex].text));
+    select.innerHTML = `<option value="0">无分类</option>` + categoriesCache.map(c=>`<option value="${c.id}">${c.name_zh||c.name_en}</option>`).join('');
+    select.value = currentVal.match(/\d+/)?.[0] || 0;
+    td.innerHTML = ''; td.appendChild(select); select.focus();
+    select.addEventListener('blur', ()=>saveEdit(td, field, id, select.value, select.options[select.selectedIndex].text));
+    select.addEventListener('change', ()=>saveEdit(td, field, id, select.value, select.options[select.selectedIndex].text));
   } else {
     const input = document.createElement('input');
-    input.value = currentVal;
-    td.innerHTML = '';
-    td.appendChild(input);
-    input.focus();
-    input.addEventListener('blur', () => saveEdit(td, field, id, input.value, currentVal));
-    input.addEventListener('keydown', (e) => { if (e.key === 'Enter') saveEdit(td, field, id, input.value, currentVal); });
+    input.value = currentVal; td.innerHTML = ''; td.appendChild(input); input.focus();
+    input.addEventListener('blur', ()=>saveEdit(td, field, id, input.value, currentVal));
+    input.addEventListener('keydown', e=>{ if(e.key==='Enter') saveEdit(td, field, id, input.value, currentVal); });
   }
 }
 
 async function saveEdit(td, field, id, newVal, displayVal) {
-  // 先恢复显示，避免闪烁
-  if (displayVal !== undefined) {
-    td.innerText = displayVal;
-  } else {
-    td.innerText = newVal;
-  }
+  if(displayVal!==undefined) td.innerText = displayVal; else td.innerText = newVal;
   try {
-    const body = { [field]: field === 'price1' || field === 'price2' || field === 'category_id' ? Number(newVal) : newVal };
-    await request(API + '/products/' + id, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body)
-    });
+    const body = { [field]: (field==='price1'||field==='price2'||field==='category_id') ? Number(newVal) : newVal };
+    await request(API+'/products/'+id, { method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body) });
     showToast('更新成功');
-  } catch (e) {
-    loadProducts(productsPage); // 失败时刷新
-  }
+  } catch(e) { loadProducts(productsPage); }
 }
 
 async function deleteProduct(id) {
-  if (!confirm('确认删除此产品？')) return;
-  await request(API + '/products/' + id, { method: 'DELETE' });
-  loadProducts(productsPage);
-  showToast('产品已删除');
+  if(!confirm('确认删除此产品？')) return;
+  await request(API+'/products/'+id, { method:'DELETE' });
+  loadProducts(productsPage); showToast('已删除');
 }
 
 async function batchDeleteProducts() {
-  const ids = getSelectedProductIds();
-  if (!ids.length) return showToast('请至少选择一个产品', 'error');
-  if (!confirm(`确认删除 ${ids.length} 个产品？`)) return;
-  await request(API + '/products/batch/delete', {
-    method: 'DELETE',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ ids })
-  });
-  loadProducts(productsPage);
-  showToast(`已删除 ${ids.length} 个产品`);
+  const ids = [...document.querySelectorAll('.product-check:checked')].map(cb=>parseInt(cb.value));
+  if(!ids.length) return showToast('请选择产品', 'error');
+  if(!confirm(`确认删除 ${ids.length} 个产品？`)) return;
+  await request(API+'/products/batch/delete', { method:'DELETE', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ids}) });
+  loadProducts(productsPage); showToast(`已删除 ${ids.length} 个`);
 }
 
 async function batchUpdateProducts() {
-  const ids = getSelectedProductIds();
-  if (!ids.length) return showToast('请选择产品', 'error');
-  const price1 = prompt('新价格1 (留空不修改)');
-  const price2 = prompt('新价格2 (留空不修改)');
-  const categoryId = prompt('新分类ID (留空不修改)');
-  if (price1 === null && price2 === null && categoryId === null) return;
+  const ids = [...document.querySelectorAll('.product-check:checked')].map(cb=>parseInt(cb.value));
+  if(!ids.length) return showToast('请选择产品', 'error');
+  const price1=prompt('新价格1 (留空不修改)');
+  const price2=prompt('新价格2 (留空不修改)');
+  const cat=prompt('新分类ID (留空不修改)');
+  if(price1===null && price2===null && cat===null) return;
   const body = { ids };
-  if (price1 !== null && price1 !== '') body.price1 = parseFloat(price1);
-  if (price2 !== null && price2 !== '') body.price2 = parseFloat(price2);
-  if (categoryId !== null && categoryId !== '') body.category_id = parseInt(categoryId);
-  await request(API + '/products/batch/update', {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body)
-  });
-  loadProducts(productsPage);
-  showToast('批量修改已应用');
-}
-
-function getSelectedProductIds() {
-  return [...document.querySelectorAll('.product-check:checked')].map(cb => parseInt(cb.value));
+  if(price1!==null && price1!=='') body.price1=parseFloat(price1);
+  if(price2!==null && price2!=='') body.price2=parseFloat(price2);
+  if(cat!==null && cat!=='') body.category_id=parseInt(cat);
+  await request(API+'/products/batch/update', { method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body) });
+  loadProducts(productsPage); showToast('批量修改已应用');
 }
 
 function renderProductsPagination(total, limit) {
-  const totalPages = Math.ceil(total / limit);
-  const pagDiv = document.getElementById('productsPagination');
-  if (totalPages <= 1) { pagDiv.innerHTML = ''; return; }
-  let html = '';
-  for (let i = 1; i <= totalPages; i++) {
-    html += `<button class="page-btn ${i === productsPage ? 'active' : ''}" onclick="loadProducts(${i})">${i}</button>`;
-  }
-  pagDiv.innerHTML = html;
+  const pages = Math.ceil(total/limit);
+  const div = document.getElementById('productsPagination');
+  if(pages<=1) { div.innerHTML=''; return; }
+  let html='';
+  for(let i=1;i<=pages;i++) html+=`<button class="page-btn ${i===productsPage?'active':''}" onclick="loadProducts(${i})">${i}</button>`;
+  div.innerHTML=html;
 }
 
-// 内联添加产品（带图片上传）
 function populateInlineCategorySelect() {
-  const select = document.getElementById('newCategory');
-  select.innerHTML = '<option value="0">无分类</option>' + 
-    categoriesCache.map(c => `<option value="${c.id}">${c.name_zh || c.name_en}</option>`).join('');
+  document.getElementById('newCategory').innerHTML = '<option value="0">无分类</option>'+categoriesCache.map(c=>`<option value="${c.id}">${c.name_zh||c.name_en}</option>`).join('');
 }
 
 async function addProductInline() {
   const sku = document.getElementById('newSKU').value.trim();
-  if (!sku) return showToast('SKU 必填', 'error');
-  
-  const formData = new FormData();
-  formData.append('sku', sku);
-  formData.append('name_zh', document.getElementById('newNameZh').value);
-  formData.append('name_en', document.getElementById('newNameEn').value);
-  formData.append('price1', document.getElementById('newPrice1').value || 0);
-  formData.append('price2', document.getElementById('newPrice2').value || 0);
-  formData.append('category_id', document.getElementById('newCategory').value || 0);
-  
-  const imageFile = document.getElementById('newImage').files[0];
-  if (imageFile) {
-    formData.append('image', imageFile);
-  }
-  
+  if(!sku) return showToast('SKU必填','error');
+  const fd = new FormData();
+  fd.append('sku', sku);
+  fd.append('name_zh', document.getElementById('newNameZh').value);
+  fd.append('name_en', document.getElementById('newNameEn').value);
+  fd.append('price1', document.getElementById('newPrice1').value||0);
+  fd.append('price2', document.getElementById('newPrice2').value||0);
+  fd.append('category_id', document.getElementById('newCategory').value||0);
+  const img = document.getElementById('newImage').files[0];
+  if(img) fd.append('image', img);
   try {
-    const res = await fetch(API + '/products', { method: 'POST', body: formData });
-    if (!res.ok) {
-      const err = await res.json();
-      throw new Error(err.error || '添加失败');
-    }
+    await fetch(API+'/products', {method:'POST', body:fd});
     showToast('添加成功');
-    // 清空输入
-    ['newSKU','newNameZh','newNameEn','newPrice1','newPrice2'].forEach(id => document.getElementById(id).value = '');
-    document.getElementById('newPrice1').value = '0';
-    document.getElementById('newPrice2').value = '0';
-    document.getElementById('newImage').value = '';
+    ['newSKU','newNameZh','newNameEn','newPrice1','newPrice2'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('newPrice1').value='0'; document.getElementById('newPrice2').value='0';
+    document.getElementById('newImage').value='';
     loadProducts(productsPage);
-  } catch (e) {
-    showToast(e.message, 'error');
-  }
+  } catch(e) { showToast(e.message,'error'); }
 }
 
-// 图片操作
 async function editProductImage(id) {
-  const input = document.createElement('input');
-  input.type = 'file';
-  input.accept = 'image/*';
+  const input = document.createElement('input'); input.type='file'; input.accept='image/*';
   input.onchange = async () => {
-    const formData = new FormData();
-    formData.append('image', input.files[0]);
-    try {
-      await fetch(API + '/products/' + id, { method: 'PUT', body: formData });
-      showToast('图片更新成功');
-      loadProducts(productsPage);
-    } catch (e) { showToast('图片更新失败', 'error'); }
+    const fd = new FormData(); fd.append('image', input.files[0]);
+    await fetch(API+'/products/'+id, {method:'PUT', body:fd});
+    showToast('图片已更新'); loadProducts(productsPage);
   };
   input.click();
 }
 
 async function deleteProductImage(id) {
-  if (!confirm('确认删除此产品图片？')) return;
-  try {
-    await request(API + '/products/' + id, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ remove_image: 'true' })
-    });
-    showToast('图片已删除');
-    loadProducts(productsPage);
-  } catch (e) {}
+  if(!confirm('删除此图片？')) return;
+  await request(API+'/products/'+id, { method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify({remove_image:'true'}) });
+  showToast('图片已删除'); loadProducts(productsPage);
 }
 
-// Excel 导入相关
-let pendingExcelFile = null;
-
-function handleFileSelect(input) {
-  if (input.files.length > 0) {
-    pendingExcelFile = input.files[0];
-    document.getElementById('executeImportBtn').style.display = 'inline-block';
-    document.getElementById('cancelImportBtn').style.display = 'inline-block';
-  } else {
-    cancelImport();
-  }
-}
-
-function executeImport() {
-  if (!pendingExcelFile) return;
-  const formData = new FormData();
-  formData.append('file', pendingExcelFile);
-  const progressDiv = document.getElementById('importProgress');
-  const fill = document.getElementById('progressFill');
-  const text = document.getElementById('progressText');
-  progressDiv.style.display = 'block';
-  const xhr = new XMLHttpRequest();
-  xhr.open('POST', API + '/products/import');
-  xhr.setRequestHeader('Accept', 'text/event-stream');
-  let lastIndex = 0;
-  xhr.onprogress = function() {
-    const responseText = xhr.responseText;
-    const newPart = responseText.substring(lastIndex);
-    lastIndex = responseText.length;
-    const lines = newPart.split('\n').filter(l => l.startsWith('data: '));
-    if (lines.length > 0) {
-      const lastLine = lines[lines.length-1];
-      try {
-        const data = JSON.parse(lastLine.replace('data: ', ''));
-        const pct = data.total > 0 ? (data.processed / data.total * 100) : 0;
-        fill.style.width = pct + '%';
-        text.textContent = `已处理: ${data.processed}/${data.total} 成功: ${data.success} 跳过: ${data.skipped}`;
-        if (data.done) {
-          showToast('导入完成');
-          setTimeout(() => progressDiv.style.display = 'none', 3000);
-          loadProducts();
-          cancelImport();
-        }
-      } catch(e) {}
-    }
-  };
-  xhr.onerror = () => showToast('导入失败', 'error');
-  xhr.send(formData);
-}
-
-function cancelImport() {
-  pendingExcelFile = null;
-  document.getElementById('excelFileInput').value = '';
-  document.getElementById('executeImportBtn').style.display = 'none';
-  document.getElementById('cancelImportBtn').style.display = 'none';
-}
-
-// ========== 分类管理 ==========
-async function loadCategoriesCache() {
-  const res = await request(API + '/categories');
-  categoriesCache = res;
-}
-
+// ========== 分类（内联添加） ==========
+async function loadCategoriesCache() { const res = await request(API+'/categories'); categoriesCache = res; }
 async function loadCategories() {
   await loadCategoriesCache();
   const tbody = document.getElementById('categoriesTbody');
-  tbody.innerHTML = categoriesCache.map(c => `
+  tbody.innerHTML = categoriesCache.map(c=>`
     <tr>
       <td>${c.id}</td>
       <td>${esc(c.name_zh)}</td>
@@ -660,130 +409,107 @@ async function loadCategories() {
       </td>
     </tr>`).join('');
 }
-
-function openCategoryModal(category = null) {
-  const modal = document.getElementById('categoryModal');
-  const form = document.getElementById('categoryForm');
-  form.reset();
-  form.elements['id'].value = category ? category.id : '';
-  document.getElementById('categoryModalTitle').textContent = category ? '编辑分类' : '新增分类';
-  if (category) {
-    form.elements['name_zh'].value = category.name_zh || '';
-    form.elements['name_en'].value = category.name_en || '';
-  }
-  modal.classList.add('active');
+function openCategoryModal(cat) { /* 已弃用，改用内联编辑 */ }
+async function addCategoryInline() {
+  const zh = document.getElementById('newCatNameZh').value;
+  const en = document.getElementById('newCatNameEn').value;
+  if(!zh && !en) return showToast('请填写至少一个名称','error');
+  await request(API+'/categories', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({name_zh:zh, name_en:en}) });
+  showToast('分类已添加');
+  document.getElementById('newCatNameZh').value='';
+  document.getElementById('newCatNameEn').value='';
+  loadCategories();
 }
-
-function closeCategoryModal() {
-  document.getElementById('categoryModal').classList.remove('active');
-}
-
 async function editCategory(id) {
-  const cat = categoriesCache.find(c => c.id == id);
-  if (cat) openCategoryModal(cat);
+  const cat = categoriesCache.find(c=>c.id==id);
+  if(!cat) return;
+  const zh = prompt('中文名称', cat.name_zh);
+  const en = prompt('英文名称', cat.name_en);
+  if(zh===null && en===null) return;
+  await request(API+'/categories/'+id, { method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify({name_zh:zh||'', name_en:en||''}) });
+  showToast('已更新'); loadCategories();
 }
-
 async function deleteCategory(id) {
-  if (!confirm('删除此分类后，相关产品将归为“无分类”，确认删除？')) return;
-  await request(API + '/categories/' + id, { method: 'DELETE' });
-  loadCategories();
-  showToast('分类已删除');
+  if(!confirm('删除此分类？相关产品将归为无分类')) return;
+  await request(API+'/categories/'+id, { method:'DELETE' });
+  showToast('已删除'); loadCategories();
 }
 
-document.getElementById('categoryForm').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const formData = new FormData(e.target);
-  const id = formData.get('id');
-  const data = { name_zh: formData.get('name_zh'), name_en: formData.get('name_en') };
-  const url = id ? API + '/categories/' + id : API + '/categories';
-  const method = id ? 'PUT' : 'POST';
-  await request(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
-  closeCategoryModal();
-  loadCategories();
-  showToast(id ? '分类已更新' : '分类已添加');
-});
-
-// ========== 轮播图管理 ==========
+// ========== 轮播 ==========
 async function loadBanners() {
-  const res = await request(API + '/banners');
+  const res = await request(API+'/banners');
   const tbody = document.getElementById('bannersTbody');
-  tbody.innerHTML = res.map(b => `
+  tbody.innerHTML = res.map(b=>`
     <tr>
-      <td><img src="${b.image}" class="image-thumb" style="width:80px;height:60px;"></td>
-      <td><input type="number" value="${b.sort_order}" style="width:60px" onchange="updateBanner(${b.id}, 'sort_order', this.value)"></td>
-      <td>
-        <select onchange="updateBanner(${b.id}, 'enabled', this.value)">
-          <option value="1" ${b.enabled == 1 ? 'selected' : ''}>启用</option>
-          <option value="0" ${b.enabled == 0 ? 'selected' : ''}>禁用</option>
-        </select>
-      </td>
+      <td><img src="${b.image}" style="width:80px;height:60px;object-fit:cover;"></td>
+      <td><input type="number" value="${b.sort_order}" style="width:60px" onchange="updateBanner(${b.id},'sort_order',this.value)"></td>
+      <td><select onchange="updateBanner(${b.id},'enabled',this.value)"><option value="1" ${b.enabled==1?'selected':''}>启用</option><option value="0" ${b.enabled==0?'selected':''}>禁用</option></select></td>
       <td><button class="btn btn-danger" onclick="deleteBanner(${b.id})">🗑️</button></td>
     </tr>`).join('');
 }
-
 async function updateBanner(id, field, value) {
-  await request(API + '/banners/' + id, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ [field]: field === 'sort_order' ? parseInt(value) : parseInt(value) })
-  });
-  showToast('已更新');
+  await request(API+'/banners/'+id, { method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify({[field]: field==='sort_order'?parseInt(value):parseInt(value)}) });
 }
-
-async function deleteBanner(id) {
-  if (!confirm('删除此轮播图？')) return;
-  await request(API + '/banners/' + id, { method: 'DELETE' });
-  loadBanners();
-}
-
+async function deleteBanner(id) { if(!confirm('删除？')) return; await request(API+'/banners/'+id,{method:'DELETE'}); loadBanners(); }
 async function uploadBanner() {
   const file = document.getElementById('bannerFileInput').files[0];
-  if (!file) return;
-  const formData = new FormData();
-  formData.append('image', file);
-  formData.append('sort_order', '0');
-  formData.append('enabled', '1');
-  await fetch(API + '/banners', { method: 'POST', body: formData });
-  loadBanners();
-  showToast('轮播图已上传');
+  if(!file) return;
+  const fd = new FormData(); fd.append('image',file); fd.append('sort_order','0'); fd.append('enabled','1');
+  await fetch(API+'/banners',{method:'POST',body:fd}); loadBanners(); showToast('已上传');
 }
 
-// ========== 网站设置 ==========
+// ========== 设置 ==========
 async function loadSettings() {
-  const res = await request(API + '/settings');
-  document.getElementById('siteTitleDisplay').textContent = res.site_title || '产品展示系统';
-  const captchaGroup = document.getElementById('captchaGroup');
-  captchaGroup.style.display = res.captcha_enabled === 'false' ? 'none' : 'flex';
+  const res = await request(API+'/settings');
+  document.getElementById('siteTitleDisplay').textContent = res.site_title||'产品展示系统';
+  document.getElementById('captchaGroup').style.display = res.captcha_enabled==='false'?'none':'flex';
   return res;
 }
-
 async function loadSettingsToForm() {
-  const settings = await loadSettings();
+  const s = await loadSettings();
   const form = document.getElementById('settingsForm');
-  for (const key in settings) {
-    if (form.elements[key]) {
-      form.elements[key].value = settings[key];
-    }
-  }
+  for(const k in s) if(form.elements[k]) form.elements[k].value = s[k];
 }
-
-document.getElementById('settingsForm').addEventListener('submit', async (e) => {
+document.getElementById('settingsForm').addEventListener('submit', async e=>{
   e.preventDefault();
-  const formData = new FormData(e.target);
-  const data = {};
-  for (const [key, value] of formData.entries()) {
-    data[key] = value;
-  }
-  await request(API + '/settings', {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data)
-  });
-  showToast('设置已保存');
-  loadSettings();
+  const fd = new FormData(e.target); const data={};
+  for(const [k,v] of fd.entries()) data[k]=v;
+  await request(API+'/settings',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
+  showToast('设置已保存'); loadSettings();
 });
 
-// ========== 启动 ==========
+// Excel 导入
+let pendingExcelFile=null;
+function handleFileSelect(input) {
+  if(input.files.length) { pendingExcelFile=input.files[0]; document.getElementById('executeImportBtn').style.display='inline-block'; document.getElementById('cancelImportBtn').style.display='inline-block'; }
+  else cancelImport();
+}
+function executeImport() {
+  if(!pendingExcelFile) return;
+  const fd = new FormData(); fd.append('file', pendingExcelFile);
+  const div=document.getElementById('importProgress'), fill=document.getElementById('progressFill'), txt=document.getElementById('progressText');
+  div.style.display='block';
+  const xhr = new XMLHttpRequest();
+  xhr.open('POST', API+'/products/import'); xhr.setRequestHeader('Accept','text/event-stream');
+  let last=0;
+  xhr.onprogress = ()=>{
+    const resp = xhr.responseText;
+    const lines = resp.substring(last).split('\n').filter(l=>l.startsWith('data: '));
+    last = resp.length;
+    if(lines.length){
+      const data = JSON.parse(lines[lines.length-1].replace('data: ',''));
+      fill.style.width = (data.processed/data.total*100)+'%';
+      txt.textContent = `已处理:${data.processed}/${data.total} 成功:${data.success} 跳过:${data.skipped}`;
+      if(data.done){ showToast('导入完成'); setTimeout(()=>div.style.display='none',3000); loadProducts(); cancelImport(); }
+    }
+  };
+  xhr.send(fd);
+}
+function cancelImport() {
+  pendingExcelFile=null; document.getElementById('excelFileInput').value='';
+  document.getElementById('executeImportBtn').style.display='none'; document.getElementById('cancelImportBtn').style.display='none';
+}
+
 checkAuth();
 </script>
 </body>
