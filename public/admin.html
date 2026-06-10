@@ -544,20 +544,11 @@ async function clearDatabase() {
   }
 }
 
-// ========== Excel 导入 ==========
-// 新增：统一重置导入UI
-function resetImportUI() {
-  pendingExcelFile = null;
-  const fileInput = document.getElementById('excelFileInput');
-  fileInput.value = '';
-  document.getElementById('executeImportBtn').style.display = 'none';
-  document.getElementById('cancelImportBtn').style.display = 'none';
-  document.getElementById('importProgress').style.display = 'none';
-}
+// ========== Excel 导入（修复版） ==========
+let pendingExcelFile = null;
 
-// 文件选择处理（增强版）
 function handleFileSelect(input) {
-  // 先清空，保证再次选择同一文件也能触发 change
+  // 关键：先清空，确保再次选择同一文件时也能触发 change
   input.value = '';
   
   if (input.files.length > 0) {
@@ -568,11 +559,10 @@ function handleFileSelect(input) {
     cancelImport();
   }
 }
-// 执行导入（防重复、强制刷新UI）
+
 function executeImport() {
   if (!pendingExcelFile) return showToast('没有待导入的文件', 'error');
 
-  const fileInput = document.getElementById('excelFileInput');
   const execBtn = document.getElementById('executeImportBtn');
   const cancelBtn = document.getElementById('cancelImportBtn');
   const progressDiv = document.getElementById('importProgress');
@@ -604,9 +594,8 @@ function executeImport() {
         fill.style.width = pct + '%';
         text.textContent = `已处理: ${data.processed}/${data.total} 成功: ${data.success} 跳过: ${data.skipped}`;
         if (data.done) {
-          // 完成时立即重置界面
           setTimeout(() => {
-            resetImportUI();
+            cancelImport();      // 导入完成后重置界面
             loadProducts();
             showToast('导入完成');
           }, 500);
@@ -626,7 +615,7 @@ function executeImport() {
   xhr.send(formData);
 }
 
-  function cancelImport() {
+function cancelImport() {
   pendingExcelFile = null;
   const fileInput = document.getElementById('excelFileInput');
   fileInput.value = '';
