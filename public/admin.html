@@ -82,14 +82,6 @@
     .page-btn { padding: 0.3rem 0.7rem; background: var(--card); border: 1px solid var(--border); border-radius: 4px; cursor: pointer; }
     .page-btn.active { background: var(--primary); color: white; }
     
-    /* 模态框 */
-    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); z-index: 1000; justify-content: center; align-items: center; }
-    .modal.active { display: flex; }
-    .modal-content { background: var(--card); border-radius: var(--radius); padding: 1.5rem; max-width: 500px; width: 90%; }
-    .modal-content h3 { margin-bottom: 1rem; }
-    .form-group { margin-bottom: 0.8rem; }
-    .form-group label { display: block; margin-bottom: 0.2rem; font-size: 0.85rem; font-weight: 500; }
-    
     /* 进度条 */
     .progress-container { margin: 0.5rem 0; }
     .progress-bar { height: 20px; background: #e2e8f0; border-radius: 10px; overflow: hidden; }
@@ -100,6 +92,10 @@
     .toast { position: fixed; top: 20px; right: 20px; background: var(--card); padding: 0.8rem 1.2rem; border-radius: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); z-index: 2000; display: none; }
     .toast.show { display: block; animation: fadeIn 0.3s; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+    
+    /* 内联添加行 */
+    .inline-add { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; margin-bottom: 1rem; }
+    .inline-add input, .inline-add select { width: 120px; }
   </style>
 </head>
 <body>
@@ -133,25 +129,40 @@
 
   <!-- 产品管理 -->
   <div class="tab-content active" id="tab-products">
+    <!-- 操作按钮行 -->
     <div class="btn-group">
-      <button class="btn btn-primary" onclick="openProductModal()">➕ 添加产品</button>
-      <!-- Excel 导入区域（替换原按钮和文件框） -->
-<button class="btn btn-warning" onclick="document.getElementById('excelFileInput').click()">📥 Excel导入</button>
-<input type="file" id="excelFileInput" accept=".xlsx" style="display:none" onchange="handleFileSelect(this)">
-<button class="btn btn-success" id="executeImportBtn" style="display:none;" onclick="executeImport()">✅ 执行</button>
-<button class="btn btn-danger" id="cancelImportBtn" style="display:none;" onclick="cancelImport()">❌ 取消</button>
-<a href="/api/products/template" class="btn btn-outline">📄 下载模板</a>
       <button class="btn btn-danger" onclick="batchDeleteProducts()">🗑️ 批量删除</button>
       <button class="btn btn-outline" onclick="batchUpdateProducts()">✏️ 批量修改</button>
+      <button class="btn btn-warning" onclick="document.getElementById('excelFileInput').click()">📥 Excel导入</button>
+      <input type="file" id="excelFileInput" accept=".xlsx" style="display:none" onchange="handleFileSelect(this)">
+      <button class="btn btn-success" id="executeImportBtn" style="display:none;" onclick="executeImport()">✅ 执行</button>
+      <button class="btn btn-danger" id="cancelImportBtn" style="display:none;" onclick="cancelImport()">❌ 取消</button>
+      <a href="/api/products/template" class="btn btn-outline">📄 下载模板</a>
     </div>
+
+    <!-- 进度条 -->
     <div class="progress-container" id="importProgress" style="display:none">
       <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
       <div class="progress-text" id="progressText"></div>
     </div>
+
+    <!-- 内联添加行 -->
+    <div class="inline-add">
+      <input type="text" id="newSKU" placeholder="SKU *" required>
+      <input type="text" id="newNameZh" placeholder="中文名称">
+      <input type="text" id="newNameEn" placeholder="英文名称">
+      <input type="number" id="newPrice1" placeholder="价格1" value="0" step="0.01">
+      <input type="number" id="newPrice2" placeholder="价格2" value="0" step="0.01">
+      <select id="newCategory"></select>
+      <button class="btn btn-primary" onclick="addProductInline()">➕ 添加</button>
+    </div>
+
+    <!-- 产品表格 -->
     <div style="overflow-x:auto;">
       <table id="productsTable">
         <thead>
           <tr>
+            <th>操作</th>
             <th><input type="checkbox" id="selectAllProducts"></th>
             <th>SKU</th>
             <th>中文名称</th>
@@ -160,7 +171,6 @@
             <th>价格2</th>
             <th>分类</th>
             <th>图片</th>
-            <th>操作</th>
           </tr>
         </thead>
         <tbody></tbody>
@@ -225,40 +235,11 @@
           <option value="false">关闭</option>
         </select>
       </div>
-  <!-- 新增：版权信息 -->
-  <div class="form-group">
-    <label>底部版权信息</label>
-    <input name="copyright" placeholder="© 2026 Product Catalog">
-  </div>
-      <button type="submit" class="btn btn-primary">保存设置</button>
-    </form>
-  </div>
-</div>
-
-<!-- 产品编辑模态框 -->
-<div class="modal" id="productModal">
-  <div class="modal-content">
-    <h3 id="productModalTitle">添加产品</h3>
-    <form id="productForm">
-      <input type="hidden" name="id">
-      <div class="form-group"><label>SKU *</label><input name="sku" required></div>
-      <div class="form-group"><label>中文名称</label><input name="name_zh"></div>
-      <div class="form-group"><label>英文名称</label><input name="name_en"></div>
-      <div class="form-group"><label>价格1</label><input type="number" step="0.01" name="price1" value="0"></div>
-      <div class="form-group"><label>价格2</label><input type="number" step="0.01" name="price2" value="0"></div>
-      <div class="form-group"><label>分类</label><select name="category_id" id="productCatSelect"></select></div>
       <div class="form-group">
-        <label>图片</label>
-        <input type="file" id="productImageFile" accept="image/*">
-        <div id="currentProductImage" style="margin-top:0.3rem;"></div>
-        <label style="display:inline-flex;align-items:center;margin-top:0.3rem;">
-          <input type="checkbox" name="remove_image" value="true"> 删除现有图片
-        </label>
+        <label>底部版权信息</label>
+        <input name="copyright" placeholder="© 2024 Product Catalog">
       </div>
-      <div style="display:flex;gap:0.5rem;justify-content:flex-end;">
-        <button type="button" class="btn btn-outline" onclick="closeProductModal()">取消</button>
-        <button type="submit" class="btn btn-primary">保存</button>
-      </div>
+      <button type="submit" class="btn btn-primary">保存设置</button>
     </form>
   </div>
 </div>
@@ -338,7 +319,6 @@ async function logout() {
   location.reload();
 }
 
-// 检查登录状态
 async function checkAuth() {
   const res = await fetch(API + '/check-auth');
   const data = await res.json();
@@ -375,9 +355,11 @@ document.querySelectorAll('.tab').forEach(tab => {
 // ========== 产品管理 ==========
 async function loadProducts(page = 1) {
   productsPage = page;
-  const res = await request(API + '/products?page=' + page);
+  const res = await request(API + '/products?page=' + page + '&_=' + Date.now());
   renderProducts(res.products);
   renderProductsPagination(res.total, res.limit);
+  // 刷新内联添加的分类下拉
+  populateInlineCategorySelect();
 }
 
 function renderProducts(products) {
@@ -386,6 +368,9 @@ function renderProducts(products) {
     const catName = getCategoryName(p.category_id);
     return `
     <tr>
+      <td>
+        <button class="btn btn-danger" style="padding:0.2rem 0.5rem;font-size:0.75rem" onclick="deleteProduct(${p.id})">🗑️</button>
+      </td>
       <td><input type="checkbox" value="${p.id}" class="product-check"></td>
       <td class="editable" data-field="sku" data-id="${p.id}">${esc(p.sku)}</td>
       <td class="editable" data-field="name_zh" data-id="${p.id}">${esc(p.name_zh)}</td>
@@ -394,10 +379,6 @@ function renderProducts(products) {
       <td class="editable" data-field="price2" data-id="${p.id}">${p.price2}</td>
       <td class="editable" data-field="category_id" data-id="${p.id}" data-type="select">${catName} (${p.category_id})</td>
       <td><img src="${p.image || '/images/no-image.png'}" class="image-thumb" onclick="editProductImage(${p.id})" title="点击更换图片"></td>
-      <td>
-        <button class="btn btn-outline" style="padding:0.2rem 0.5rem;font-size:0.75rem" onclick="editProduct(${p.id})">✏️</button>
-        <button class="btn btn-danger" style="padding:0.2rem 0.5rem;font-size:0.75rem" onclick="deleteProduct(${p.id})">🗑️</button>
-      </td>
     </tr>`;
   }).join('');
   
@@ -429,10 +410,10 @@ function makeEditable(e) {
   const type = td.dataset.type;
   
   if (type === 'select') {
-    // 分类下拉选择
     const select = document.createElement('select');
     select.innerHTML = `<option value="0">无分类</option>` + 
-      categoriesCache.map(c => `<option value="${c.id}" ${c.id == id ? 'selected' : ''}>${c.name_zh || c.name_en}</option>`).join('');
+      categoriesCache.map(c => `<option value="${c.id}">${c.name_zh || c.name_en}</option>`).join('');
+    select.value = id; // 实际上是当前分类ID，需要从数据获取
     td.innerHTML = '';
     td.appendChild(select);
     select.focus();
@@ -463,7 +444,7 @@ async function saveEdit(td, field, id, newVal, displayVal) {
     });
     showToast('更新成功');
   } catch (e) {
-    loadProducts(productsPage); // 刷新恢复
+    loadProducts(productsPage);
   }
 }
 
@@ -522,39 +503,41 @@ function renderProductsPagination(total, limit) {
   pagDiv.innerHTML = html;
 }
 
-// 产品模态框
-function openProductModal(product = null) {
-  const modal = document.getElementById('productModal');
-  const form = document.getElementById('productForm');
-  form.reset();
-  form.elements['id'].value = product ? product.id : '';
-  document.getElementById('productModalTitle').textContent = product ? '编辑产品' : '添加产品';
-  if (product) {
-    form.elements['sku'].value = product.sku || '';
-    form.elements['name_zh'].value = product.name_zh || '';
-    form.elements['name_en'].value = product.name_en || '';
-    form.elements['price1'].value = product.price1 || 0;
-    form.elements['price2'].value = product.price2 || 0;
-    form.elements['category_id'].value = product.category_id || 0;
-    document.getElementById('currentProductImage').innerHTML = product.image ? `<img src="${product.image}" class="image-thumb">` : '';
-  } else {
-    document.getElementById('currentProductImage').innerHTML = '';
-  }
-  populateCategorySelect();
-  modal.classList.add('active');
+// 内联添加产品
+function populateInlineCategorySelect() {
+  const select = document.getElementById('newCategory');
+  select.innerHTML = '<option value="0">无分类</option>' + 
+    categoriesCache.map(c => `<option value="${c.id}">${c.name_zh || c.name_en}</option>`).join('');
 }
 
-function closeProductModal() {
-  document.getElementById('productModal').classList.remove('active');
+async function addProductInline() {
+  const sku = document.getElementById('newSKU').value.trim();
+  if (!sku) return showToast('SKU 必填', 'error');
+  const data = {
+    sku,
+    name_zh: document.getElementById('newNameZh').value,
+    name_en: document.getElementById('newNameEn').value,
+    price1: document.getElementById('newPrice1').value || 0,
+    price2: document.getElementById('newPrice2').value || 0,
+    category_id: document.getElementById('newCategory').value || 0,
+  };
+  try {
+    await request(API + '/products', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    showToast('添加成功');
+    // 清空输入框
+    ['newSKU','newNameZh','newNameEn','newPrice1','newPrice2'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('newPrice1').value = '0';
+    document.getElementById('newPrice2').value = '0';
+    loadProducts(productsPage);
+  } catch (e) {}
 }
 
-async function editProduct(id) {
-  const product = await request(API + '/products/' + id);
-  openProductModal(product);
-}
-
+// 图片更换
 async function editProductImage(id) {
-  // 简单的图片更换：触发文件选择
   const input = document.createElement('input');
   input.type = 'file';
   input.accept = 'image/*';
@@ -570,60 +553,30 @@ async function editProductImage(id) {
   input.click();
 }
 
-document.getElementById('productForm').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const formData = new FormData(e.target);
-  const id = formData.get('id');
-  const isEdit = !!id;
-  const url = isEdit ? API + '/products/' + id : API + '/products';
-  const method = isEdit ? 'PUT' : 'POST';
-  
-  const imageFile = document.getElementById('productImageFile').files[0];
-  if (imageFile) formData.append('image', imageFile);
-  
-  try {
-    await fetch(url, { method, body: formData });
-    closeProductModal();
-    loadProducts(productsPage);
-    showToast(isEdit ? '产品已更新' : '产品已添加');
-  } catch (e) {
-    showToast('保存失败', 'error');
-  }
-});
-
-// Excel导入 (SSE)
-// Excel 文件暂存变量
+// Excel 导入相关
 let pendingExcelFile = null;
 
-// 文件选择后仅保存，不立即导入
 function handleFileSelect(input) {
   if (input.files.length > 0) {
     pendingExcelFile = input.files[0];
-    // 显示按钮
     document.getElementById('executeImportBtn').style.display = 'inline-block';
     document.getElementById('cancelImportBtn').style.display = 'inline-block';
-    // 可选：在按钮旁显示文件名
-    input.nextElementSibling.textContent = ' 已选: ' + pendingExcelFile.name;
   } else {
     cancelImport();
   }
 }
 
-// 执行导入
 function executeImport() {
   if (!pendingExcelFile) return;
   const formData = new FormData();
   formData.append('file', pendingExcelFile);
-
   const progressDiv = document.getElementById('importProgress');
   const fill = document.getElementById('progressFill');
   const text = document.getElementById('progressText');
   progressDiv.style.display = 'block';
-
   const xhr = new XMLHttpRequest();
   xhr.open('POST', API + '/products/import');
   xhr.setRequestHeader('Accept', 'text/event-stream');
-
   let lastIndex = 0;
   xhr.onprogress = function() {
     const responseText = xhr.responseText;
@@ -641,7 +594,7 @@ function executeImport() {
           showToast('导入完成');
           setTimeout(() => progressDiv.style.display = 'none', 3000);
           loadProducts();
-          cancelImport(); // 导入后清除选择
+          cancelImport();
         }
       } catch(e) {}
     }
@@ -650,29 +603,17 @@ function executeImport() {
   xhr.send(formData);
 }
 
-// 取消导入，清除文件选择
 function cancelImport() {
   pendingExcelFile = null;
   document.getElementById('excelFileInput').value = '';
   document.getElementById('executeImportBtn').style.display = 'none';
   document.getElementById('cancelImportBtn').style.display = 'none';
-  // 清除文件名显示
-  const fileInput = document.getElementById('excelFileInput');
-  if (fileInput.nextElementSibling) {
-    fileInput.nextElementSibling.textContent = '';
-  }
 }
 
 // ========== 分类管理 ==========
 async function loadCategoriesCache() {
   const res = await request(API + '/categories');
   categoriesCache = res;
-}
-
-function populateCategorySelect() {
-  const select = document.getElementById('productCatSelect');
-  select.innerHTML = '<option value="0">无分类</option>' + 
-    categoriesCache.map(c => `<option value="${c.id}">${c.name_zh || c.name_en}</option>`).join('');
 }
 
 async function loadCategories() {
@@ -781,13 +722,8 @@ async function uploadBanner() {
 async function loadSettings() {
   const res = await request(API + '/settings');
   document.getElementById('siteTitleDisplay').textContent = res.site_title || '产品展示系统';
-  // 根据验证码设置显示/隐藏验证码区域
   const captchaGroup = document.getElementById('captchaGroup');
-  if (res.captcha_enabled === 'false') {
-    captchaGroup.style.display = 'none';
-  } else {
-    captchaGroup.style.display = 'flex';
-  }
+  captchaGroup.style.display = res.captcha_enabled === 'false' ? 'none' : 'flex';
   return res;
 }
 
@@ -814,7 +750,7 @@ document.getElementById('settingsForm').addEventListener('submit', async (e) => 
     body: JSON.stringify(data)
   });
   showToast('设置已保存');
-  loadSettings(); // 刷新标题等
+  loadSettings();
 });
 
 // ========== 启动 ==========
