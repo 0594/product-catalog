@@ -218,6 +218,12 @@ pm2 restart product-catalog
 | Excel 导入超时 | 增大 Nginx 的 `client_max_body_size` 和 `proxy_read_timeout` |
 | 前台图片不显示 | 确保 `default_image` 设置路径有效，或上传图片后测试 |
 | 重启后设置丢失 | 确保 `catalog.db` 未被删除，权限可写 |
+### 🛠️ 如果完全忘记旧密码，如何重置？
+直接在数据库中修改为新密码（跳过旧密码验证）：
+```bash
+sqlite3 /opt/product-catalog/catalog.db "INSERT OR REPLACE INTO settings (key, value) VALUES ('admin_password', '你的新密码');"
+```
+然后重启服务即可用新密码登录。
 
 ---
 
