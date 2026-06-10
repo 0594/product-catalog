@@ -199,24 +199,29 @@
     }
 
     async function loadProducts(page = 1) {
-      try {
-        const category = document.getElementById('categoryFilter').value;
-        const search = document.getElementById('searchInput').value;
-        const limit = state.settings.products_per_page || 12;
-        const params = new URLSearchParams({ category, search, page, limit });
-        const res = await fetch('/api/products?' + params);
-        if (!res.ok) throw new Error('Products API failed');
-        const data = await res.json();
-        state.products = data.products;
-        state.total = data.total;
-        state.currentPage = page;
-        renderProducts();
-        renderPagination();
-      } catch (e) {
-        console.error(e);
-        document.getElementById('productGrid').innerHTML = '<p style="padding:2rem;color:red;">加载产品失败，请检查控制台错误</p>';
-      }
-    }
+  try {
+    const category = document.getElementById('categoryFilter').value;
+    const search = document.getElementById('searchInput').value;
+    const limit = (state.settings && state.settings.products_per_page) || 12;
+    const params = new URLSearchParams({
+      category, search, page, limit,
+      _t: Date.now()   // 加时间戳防缓存
+    });
+    const res = await fetch('/api/products?' + params);
+    if (!res.ok) throw new Error('请求失败');
+    const data = await res.json();
+    // 防御性赋值
+    state.products = data.products || [];
+    state.total = data.total || 0;
+    state.currentPage = page;
+    renderProducts();
+    renderPagination();
+  } catch (e) {
+    console.error(e);
+    document.getElementById('productGrid').innerHTML = 
+      '<p style="padding:2rem;color:red;">加载失败，请刷新重试</p>';
+  }
+}
 
     function renderProducts() {
       const grid = document.getElementById('productGrid');
@@ -284,16 +289,15 @@
 
     // 启动
     (async () => {
-      try {
-        await loadSettings();
-        await loadCategories();
-        await loadBanners();
-        await loadProducts();
-      } catch (e) {
-        console.error('初始化失败:', e);
-        document.body.innerHTML = '<h2 style="text-align:center;margin-top:50px;">系统初始化失败，请检查后端服务是否正常</h2>';
-      }
-    })();
+  try {
+    await loadSettings();   // 先拿到设置
+    await loadCategories();
+    await loadBanners();
+    await loadProducts();   // 再加载产品
+  } catch (e) {
+    console.error('初始化失败:', e);
+  }
+})();
   </script>
 </body>
 </html>
