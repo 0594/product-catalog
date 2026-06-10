@@ -6,28 +6,20 @@
   <title>后台管理 - 产品展示系统</title>
   <style>
     :root {
-      --primary: #2563eb;
-      --primary-light: #dbeafe;
-      --danger: #dc2626;
-      --danger-light: #fee2e2;
-      --success: #16a34a;
-      --success-light: #dcfce7;
-      --warning: #f59e0b;
-      --warning-light: #fef3c7;
-      --bg: #f8fafc;
-      --card: #ffffff;
-      --border: #e2e8f0;
-      --text: #1e293b;
-      --text-light: #64748b;
-      --radius: 8px;
+      --primary: #2563eb; --primary-light: #dbeafe; --danger: #dc2626; --danger-light: #fee2e2;
+      --success: #16a34a; --success-light: #dcfce7; --warning: #f59e0b; --warning-light: #fef3c7;
+      --bg: #f8fafc; --card: #ffffff; --border: #e2e8f0; --text: #1e293b; --text-light: #64748b; --radius: 8px;
     }
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif; background: var(--bg); color: var(--text); }
+
+    /* 登录页 */
     .login-container { max-width: 400px; margin: 80px auto; background: var(--card); padding: 2rem; border-radius: var(--radius); box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
     .login-container h2 { text-align: center; margin-bottom: 1.5rem; }
     .captcha-row { display: flex; gap: 0.5rem; align-items: center; margin-bottom: 1rem; }
     .captcha-row img { cursor: pointer; border: 1px solid var(--border); border-radius: 4px; height: 40px; }
     .captcha-row input { flex: 1; }
+    
     .admin-wrapper { display: none; }
     .topbar { background: var(--card); padding: 0.8rem 1.5rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); margin-bottom: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
     .topbar h1 { font-size: 1.5rem; }
@@ -36,6 +28,7 @@
     .tab.active { background: var(--primary); color: white; }
     .tab-content { display: none; padding: 0 1.5rem; }
     .tab-content.active { display: block; }
+
     .btn { padding: 0.4rem 0.9rem; border: none; border-radius: 5px; cursor: pointer; font-size: 0.85rem; font-weight: 500; transition: opacity 0.2s; }
     .btn:hover { opacity: 0.9; }
     .btn-primary { background: var(--primary); color: white; }
@@ -44,11 +37,20 @@
     .btn-warning { background: var(--warning); color: white; }
     .btn-outline { background: white; border: 1px solid var(--border); color: var(--text); }
     .btn-group { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1rem; align-items: center; }
+
     input, select, textarea { padding: 0.5rem 0.7rem; border: 1px solid var(--border); border-radius: 4px; font-size: 0.9rem; outline: none; background: white; }
     input:focus, select:focus { border-color: var(--primary); box-shadow: 0 0 0 2px var(--primary-light); }
-    table { width: 100%; border-collapse: collapse; background: var(--card); border-radius: var(--radius); overflow: hidden; }
+
+    /* 固定表头容器 */
+    .table-wrapper {
+      max-height: 600px;
+      overflow-y: auto;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+    }
+    table { width: 100%; border-collapse: collapse; background: var(--card); }
     th, td { padding: 0.6rem 0.5rem; border-bottom: 1px solid var(--border); font-size: 0.85rem; text-align: left; }
-    th { background: #f8fafc; font-weight: 600; }
+    th { background: #f8fafc; font-weight: 600; position: sticky; top: 0; z-index: 2; }
     tr:hover td { background: #f1f5f9; }
     .editable { cursor: pointer; position: relative; }
     .editable:hover { background: #e2e8f0; }
@@ -57,13 +59,16 @@
     .pagination { display: flex; gap: 0.5rem; justify-content: center; margin-top: 1rem; }
     .page-btn { padding: 0.3rem 0.7rem; background: var(--card); border: 1px solid var(--border); border-radius: 4px; cursor: pointer; }
     .page-btn.active { background: var(--primary); color: white; }
+
     .progress-container { margin: 0.5rem 0; }
     .progress-bar { height: 20px; background: #e2e8f0; border-radius: 10px; overflow: hidden; }
     .progress-fill { height: 100%; background: var(--primary); width: 0%; transition: width 0.3s; border-radius: 10px; }
     .progress-text { font-size: 0.8rem; color: var(--text-light); margin-top: 0.2rem; }
+
     .toast { position: fixed; top: 20px; right: 20px; background: var(--card); padding: 0.8rem 1.2rem; border-radius: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); z-index: 2000; display: none; }
     .toast.show { display: block; animation: fadeIn 0.3s; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+
     .inline-add { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; margin-bottom: 1rem; }
     .inline-add input, .inline-add select { width: 130px; }
     .delete-img-btn { background: none; border: none; color: var(--danger); cursor: pointer; font-size: 0.75rem; margin-left: 0.2rem; }
@@ -73,9 +78,13 @@
   </style>
 </head>
 <body>
+
+<!-- 登录界面 -->
 <div class="login-container" id="loginBox">
   <h2>🔐 管理员登录</h2>
-  <div class="form-group"><input type="password" id="passwordInput" placeholder="请输入密码" onkeydown="if(event.key==='Enter') login()"></div>
+  <div class="form-group">
+    <input type="password" id="passwordInput" placeholder="请输入密码" onkeydown="if(event.key==='Enter') login()">
+  </div>
   <div class="captcha-row" id="captchaGroup">
     <input type="text" id="captchaInput" placeholder="验证码" onkeydown="if(event.key==='Enter') login()">
     <img id="captchaImg" src="/api/captcha" alt="验证码" onclick="refreshCaptcha()">
@@ -83,11 +92,13 @@
   <button class="btn btn-primary" style="width:100%;margin-top:0.5rem" onclick="login()">登录</button>
 </div>
 
+<!-- 管理后台 -->
 <div class="admin-wrapper" id="adminBox">
   <div class="topbar">
     <h1 id="siteTitleDisplay">产品展示系统</h1>
     <button class="btn btn-outline" onclick="logout()">退出登录</button>
   </div>
+  
   <div class="tabs">
     <div class="tab active" data-tab="products">📦 产品管理</div>
     <div class="tab" data-tab="categories">🏷️ 分类管理</div>
@@ -106,10 +117,12 @@
       <button class="btn btn-danger" id="cancelImportBtn" style="display:none;" onclick="cancelImport()">❌ 取消</button>
       <a href="/api/products/template" class="btn btn-outline">📄 下载模板</a>
     </div>
+
     <div class="progress-container" id="importProgress" style="display:none">
       <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
       <div class="progress-text" id="progressText"></div>
     </div>
+
     <div class="inline-add">
       <input type="text" id="newSKU" placeholder="SKU *" required>
       <input type="text" id="newNameZh" placeholder="中文名称">
@@ -120,7 +133,9 @@
       <input type="file" id="newImage" accept="image/*" style="width:150px;">
       <button class="btn btn-primary" onclick="addProductInline()">➕ 添加</button>
     </div>
-    <div style="overflow-x:auto;">
+
+    <!-- 固定表头容器 -->
+    <div class="table-wrapper">
       <table id="productsTable">
         <thead>
           <tr>
@@ -141,7 +156,7 @@
     <div class="pagination" id="productsPagination"></div>
   </div>
 
-  <!-- 分类管理（内联添加） -->
+  <!-- 分类管理 -->
   <div class="tab-content" id="tab-categories">
     <div class="inline-add">
       <input type="text" id="newCatNameZh" placeholder="中文名称">
@@ -206,6 +221,7 @@ async function request(url, options={}) {
   return res.json();
 }
 
+// 登录相关
 function refreshCaptcha() { document.getElementById('captchaImg').src = API+'/captcha?'+Date.now(); }
 async function login() {
   const pwd = document.getElementById('passwordInput').value;
@@ -229,6 +245,7 @@ async function initAdmin() {
   document.querySelector('.tab[data-tab="products"]').click();
 }
 
+// 选项卡切换
 document.querySelectorAll('.tab').forEach(tab => {
   tab.addEventListener('click', function() {
     document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
@@ -243,7 +260,7 @@ document.querySelectorAll('.tab').forEach(tab => {
   });
 });
 
-// ========== 产品 ==========
+// ========== 产品管理 ==========
 async function loadProducts(page=1) {
   productsPage = page;
   const res = await request(API+'/products?page='+page+'&_='+Date.now());
@@ -310,7 +327,10 @@ async function saveEdit(td, field, id, newVal, displayVal) {
     const body = { [field]: (field==='price1'||field==='price2'||field==='category_id') ? Number(newVal) : newVal };
     await request(API+'/products/'+id, { method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body) });
     showToast('更新成功');
-  } catch(e) { loadProducts(productsPage); }
+    loadProducts(productsPage);  // 自动刷新当前页数据
+  } catch(e) {
+    loadProducts(productsPage);  // 失败时也刷新恢复原状
+  }
 }
 
 async function deleteProduct(id) {
@@ -393,7 +413,7 @@ async function deleteProductImage(id) {
   showToast('图片已删除'); loadProducts(productsPage);
 }
 
-// ========== 分类（内联添加） ==========
+// ========== 分类管理 ==========
 async function loadCategoriesCache() { const res = await request(API+'/categories'); categoriesCache = res; }
 async function loadCategories() {
   await loadCategoriesCache();
@@ -409,7 +429,7 @@ async function loadCategories() {
       </td>
     </tr>`).join('');
 }
-function openCategoryModal(cat) { /* 已弃用，改用内联编辑 */ }
+
 async function addCategoryInline() {
   const zh = document.getElementById('newCatNameZh').value;
   const en = document.getElementById('newCatNameEn').value;
@@ -420,6 +440,7 @@ async function addCategoryInline() {
   document.getElementById('newCatNameEn').value='';
   loadCategories();
 }
+
 async function editCategory(id) {
   const cat = categoriesCache.find(c=>c.id==id);
   if(!cat) return;
@@ -429,13 +450,14 @@ async function editCategory(id) {
   await request(API+'/categories/'+id, { method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify({name_zh:zh||'', name_en:en||''}) });
   showToast('已更新'); loadCategories();
 }
+
 async function deleteCategory(id) {
   if(!confirm('删除此分类？相关产品将归为无分类')) return;
   await request(API+'/categories/'+id, { method:'DELETE' });
   showToast('已删除'); loadCategories();
 }
 
-// ========== 轮播 ==========
+// ========== 轮播图管理 ==========
 async function loadBanners() {
   const res = await request(API+'/banners');
   const tbody = document.getElementById('bannersTbody');
@@ -458,7 +480,7 @@ async function uploadBanner() {
   await fetch(API+'/banners',{method:'POST',body:fd}); loadBanners(); showToast('已上传');
 }
 
-// ========== 设置 ==========
+// ========== 网站设置 ==========
 async function loadSettings() {
   const res = await request(API+'/settings');
   document.getElementById('siteTitleDisplay').textContent = res.site_title||'产品展示系统';
