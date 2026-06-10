@@ -34,7 +34,10 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-app.get('/admin', (req, res) => {
+// 原后台路径 app.get('/admin', (req, res) => {
+const { getSetting } = require('./db');   // 放在文件顶部或这里
+const adminPath = getSetting('admin_path') || '/admin';
+app.get(adminPath, (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'admin.html'));
 });
 
