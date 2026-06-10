@@ -95,7 +95,8 @@
     
     /* 内联添加行 */
     .inline-add { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; margin-bottom: 1rem; }
-    .inline-add input, .inline-add select { width: 120px; }
+    .inline-add input, .inline-add select { width: 130px; }
+    .delete-img-btn { background: none; border: none; color: var(--danger); cursor: pointer; font-size: 0.75rem; margin-left: 0.2rem; }
   </style>
 </head>
 <body>
@@ -146,14 +147,15 @@
       <div class="progress-text" id="progressText"></div>
     </div>
 
-    <!-- 内联添加行 -->
+    <!-- 内联添加行（包含图片上传） -->
     <div class="inline-add">
       <input type="text" id="newSKU" placeholder="SKU *" required>
       <input type="text" id="newNameZh" placeholder="中文名称">
       <input type="text" id="newNameEn" placeholder="英文名称">
-      <input type="number" id="newPrice1" placeholder="价格1"  step="0.01">
-      <input type="number" id="newPrice2" placeholder="价格2"  step="0.01">
+      <input type="number" id="newPrice1" placeholder="价格1" value="0" step="0.01">
+      <input type="number" id="newPrice2" placeholder="价格2" value="0" step="0.01">
       <select id="newCategory"></select>
+      <input type="file" id="newImage" accept="image/*" style="width:150px;">
       <button class="btn btn-primary" onclick="addProductInline()">➕ 添加</button>
     </div>
 
@@ -162,15 +164,15 @@
       <table id="productsTable">
         <thead>
           <tr>
-            <th>操作</th>
             <th><input type="checkbox" id="selectAllProducts"></th>
+            <th>操作</th>
+            <th>图片</th>
             <th>SKU</th>
             <th>中文名称</th>
             <th>英文名称</th>
             <th>价格1</th>
             <th>价格2</th>
             <th>分类</th>
-            <th>图片</th>
           </tr>
         </thead>
         <tbody></tbody>
@@ -358,7 +360,6 @@ async function loadProducts(page = 1) {
   const res = await request(API + '/products?page=' + page + '&_=' + Date.now());
   renderProducts(res.products);
   renderProductsPagination(res.total, res.limit);
-  // 刷新内联添加的分类下拉
   populateInlineCategorySelect();
 }
 
@@ -368,17 +369,20 @@ function renderProducts(products) {
     const catName = getCategoryName(p.category_id);
     return `
     <tr>
+      <td><input type="checkbox" value="${p.id}" class="product-check"></td>
       <td>
         <button class="btn btn-danger" style="padding:0.2rem 0.5rem;font-size:0.75rem" onclick="deleteProduct(${p.id})">🗑️</button>
       </td>
-      <td><input type="checkbox" value="${p.id}" class="product-check"></td>
+      <td style="display:flex; align-items:center; gap:0.2rem;">
+        <img src="${p.image || '/images/no-image.png'}" class="image-thumb" onclick="editProductImage(${p.id})" title="更换图片">
+        ${p.image ? `<button class="delete-img-btn" onclick="deleteProductImage(${p.id})" title="删除图片">✕</button>` : ''}
+      </td>
       <td class="editable" data-field="sku" data-id="${p.id}">${esc(p.sku)}</td>
       <td class="editable" data-field="name_zh" data-id="${p.id}">${esc(p.name_zh)}</td>
       <td class="editable" data-field="name_en" data-id="${p.id}">${esc(p.name_en)}</td>
       <td class="editable" data-field="price1" data-id="${p.id}">${p.price1}</td>
       <td class="editable" data-field="price2" data-id="${p.id}">${p.price2}</td>
       <td class="editable" data-field="category_id" data-id="${p.id}" data-type="select">${catName} (${p.category_id})</td>
-      <td><img src="${p.image || '/images/no-image.png'}" class="image-thumb" onclick="editProductImage(${p.id})" title="点击更换图片"></td>
     </tr>`;
   }).join('');
   
@@ -410,10 +414,12 @@ function makeEditable(e) {
   const type = td.dataset.type;
   
   if (type === 'select') {
+    // 获取当前产品的分类ID，从数据中或通过属性
+    const currentCatId = td.getAttribute('data-catid') || currentVal.match(/\d+/)?.[0] || 0;
     const select = document.createElement('select');
     select.innerHTML = `<option value="0">无分类</option>` + 
       categoriesCache.map(c => `<option value="${c.id}">${c.name_zh || c.name_en}</option>`).join('');
-    select.value = id; // 实际上是当前分类ID，需要从数据获取
+    select.value = currentCatId;
     td.innerHTML = '';
     td.appendChild(select);
     select.focus();
@@ -431,20 +437,22 @@ function makeEditable(e) {
 }
 
 async function saveEdit(td, field, id, newVal, displayVal) {
+  // 先恢复显示，避免闪烁
   if (displayVal !== undefined) {
     td.innerText = displayVal;
   } else {
     td.innerText = newVal;
   }
   try {
+    const body = { [field]: field === 'price1' || field === 'price2' || field === 'category_id' ? Number(newVal) : newVal };
     await request(API + '/products/' + id, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ [field]: field === 'price1' || field === 'price2' || field === 'category_id' ? Number(newVal) : newVal })
+      body: JSON.stringify(body)
     });
     showToast('更新成功');
   } catch (e) {
-    loadProducts(productsPage);
+    loadProducts(productsPage); // 失败时刷新
   }
 }
 
@@ -503,7 +511,7 @@ function renderProductsPagination(total, limit) {
   pagDiv.innerHTML = html;
 }
 
-// 内联添加产品
+// 内联添加产品（带图片上传）
 function populateInlineCategorySelect() {
   const select = document.getElementById('newCategory');
   select.innerHTML = '<option value="0">无分类</option>' + 
@@ -513,30 +521,39 @@ function populateInlineCategorySelect() {
 async function addProductInline() {
   const sku = document.getElementById('newSKU').value.trim();
   if (!sku) return showToast('SKU 必填', 'error');
-  const data = {
-    sku,
-    name_zh: document.getElementById('newNameZh').value,
-    name_en: document.getElementById('newNameEn').value,
-    price1: document.getElementById('newPrice1').value || 0,
-    price2: document.getElementById('newPrice2').value || 0,
-    category_id: document.getElementById('newCategory').value || 0,
-  };
+  
+  const formData = new FormData();
+  formData.append('sku', sku);
+  formData.append('name_zh', document.getElementById('newNameZh').value);
+  formData.append('name_en', document.getElementById('newNameEn').value);
+  formData.append('price1', document.getElementById('newPrice1').value || 0);
+  formData.append('price2', document.getElementById('newPrice2').value || 0);
+  formData.append('category_id', document.getElementById('newCategory').value || 0);
+  
+  const imageFile = document.getElementById('newImage').files[0];
+  if (imageFile) {
+    formData.append('image', imageFile);
+  }
+  
   try {
-    await request(API + '/products', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data)
-    });
+    const res = await fetch(API + '/products', { method: 'POST', body: formData });
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error || '添加失败');
+    }
     showToast('添加成功');
-    // 清空输入框
+    // 清空输入
     ['newSKU','newNameZh','newNameEn','newPrice1','newPrice2'].forEach(id => document.getElementById(id).value = '');
     document.getElementById('newPrice1').value = '0';
     document.getElementById('newPrice2').value = '0';
+    document.getElementById('newImage').value = '';
     loadProducts(productsPage);
-  } catch (e) {}
+  } catch (e) {
+    showToast(e.message, 'error');
+  }
 }
 
-// 图片更换
+// 图片操作
 async function editProductImage(id) {
   const input = document.createElement('input');
   input.type = 'file';
@@ -551,6 +568,19 @@ async function editProductImage(id) {
     } catch (e) { showToast('图片更新失败', 'error'); }
   };
   input.click();
+}
+
+async function deleteProductImage(id) {
+  if (!confirm('确认删除此产品图片？')) return;
+  try {
+    await request(API + '/products/' + id, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ remove_image: 'true' })
+    });
+    showToast('图片已删除');
+    loadProducts(productsPage);
+  } catch (e) {}
 }
 
 // Excel 导入相关
