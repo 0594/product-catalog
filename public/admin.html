@@ -279,18 +279,20 @@ async function loadProducts(page=1) {
 }
 
 function renderProducts(products) {
-  const tbody = document.querySelector('#productsTable tbody');
-  const defaultImg = document.getElementById('settingsForm')?.default_image?.value || '/images/no-image.png';
-  tbody.innerHTML = products.map(p=>{
-    const catName = getCategoryName(p.category_id);
-    const imgSrc = p.image || defaultImg || '/images/no-image.png';
-    return `<tr>
-      <td><input type="checkbox" value="${p.id}" class="product-check"></td>
-      <td><button class="btn btn-danger" style="padding:0.2rem 0.5rem;font-size:0.75rem" onclick="deleteProduct(${p.id})">🗑️</button></td>
-      <td style="display:flex;align-items:center;gap:0.2rem;">
-        <img src="${imgSrc}" class="image-thumb" onclick="editProductImage(${p.id})" title="更换图片" onerror="this.src='/images/no-image.png'">
-        ${p.image ? `<button class="delete-img-btn" onclick="deleteProductImage(${p.id})" title="删除图片">✕</button>` : ''}
-      </td>
+  // 在 renderProducts 函数开头定义占位图
+const PLACEHOLDER = 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect fill="#ccc" width="100" height="100"/><text x="50" y="55" text-anchor="middle" fill="white" font-size="12">N/A</text></svg>');
+
+const tbody = document.querySelector('#productsTable tbody');
+tbody.innerHTML = products.map(p => {
+  const catName = getCategoryName(p.category_id);
+  const imgSrc = p.image || PLACEHOLDER;
+  return `<tr>
+    <td><input type="checkbox" value="${p.id}" class="product-check"></td>
+    <td><button class="btn btn-danger" style="padding:0.2rem 0.5rem;font-size:0.75rem" onclick="deleteProduct(${p.id})">🗑️</button></td>
+    <td style="display:flex;align-items:center;gap:0.2rem;">
+      <img src="${imgSrc}" class="image-thumb" onclick="editProductImage(${p.id})" title="更换图片" onerror="this.onerror=null;this.src='${PLACEHOLDER}';">
+      ${p.image ? `<button class="delete-img-btn" onclick="deleteProductImage(${p.id})" title="删除图片">✕</button>` : ''}
+    </td>
       <td class="editable" data-field="sku" data-id="${p.id}">${esc(p.sku)}</td>
       <td class="editable" data-field="name_zh" data-id="${p.id}">${esc(p.name_zh)}</td>
       <td class="editable" data-field="name_en" data-id="${p.id}">${esc(p.name_en)}</td>
