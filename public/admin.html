@@ -135,9 +135,12 @@
   <div class="tab-content active" id="tab-products">
     <div class="btn-group">
       <button class="btn btn-primary" onclick="openProductModal()">➕ 添加产品</button>
-      <button class="btn btn-warning" onclick="document.getElementById('excelFileInput').click()">📥 Excel导入</button>
-      <input type="file" id="excelFileInput" accept=".xlsx" style="display:none" onchange="handleExcelUpload(this)">
-      <a href="/api/products/template" class="btn btn-outline">📄 下载模板</a>
+      <!-- Excel 导入区域（替换原按钮和文件框） -->
+<button class="btn btn-warning" onclick="document.getElementById('excelFileInput').click()">📥 Excel导入</button>
+<input type="file" id="excelFileInput" accept=".xlsx" style="display:none" onchange="handleFileSelect(this)">
+<button class="btn btn-success" id="executeImportBtn" style="display:none;" onclick="executeImport()">✅ 执行</button>
+<button class="btn btn-danger" id="cancelImportBtn" style="display:none;" onclick="cancelImport()">❌ 取消</button>
+<a href="/api/products/template" class="btn btn-outline">📄 下载模板</a>
       <button class="btn btn-danger" onclick="batchDeleteProducts()">🗑️ 批量删除</button>
       <button class="btn btn-outline" onclick="batchUpdateProducts()">✏️ 批量修改</button>
     </div>
@@ -589,21 +592,38 @@ document.getElementById('productForm').addEventListener('submit', async (e) => {
 });
 
 // Excel导入 (SSE)
-function handleExcelUpload(input) {
-  const file = input.files[0];
-  if (!file) return;
+// Excel 文件暂存变量
+let pendingExcelFile = null;
+
+// 文件选择后仅保存，不立即导入
+function handleFileSelect(input) {
+  if (input.files.length > 0) {
+    pendingExcelFile = input.files[0];
+    // 显示按钮
+    document.getElementById('executeImportBtn').style.display = 'inline-block';
+    document.getElementById('cancelImportBtn').style.display = 'inline-block';
+    // 可选：在按钮旁显示文件名
+    input.nextElementSibling.textContent = ' 已选: ' + pendingExcelFile.name;
+  } else {
+    cancelImport();
+  }
+}
+
+// 执行导入
+function executeImport() {
+  if (!pendingExcelFile) return;
+  const formData = new FormData();
+  formData.append('file', pendingExcelFile);
+
   const progressDiv = document.getElementById('importProgress');
   const fill = document.getElementById('progressFill');
   const text = document.getElementById('progressText');
   progressDiv.style.display = 'block';
-  
-  const formData = new FormData();
-  formData.append('file', file);
-  
+
   const xhr = new XMLHttpRequest();
   xhr.open('POST', API + '/products/import');
   xhr.setRequestHeader('Accept', 'text/event-stream');
-  
+
   let lastIndex = 0;
   xhr.onprogress = function() {
     const responseText = xhr.responseText;
@@ -621,11 +641,26 @@ function handleExcelUpload(input) {
           showToast('导入完成');
           setTimeout(() => progressDiv.style.display = 'none', 3000);
           loadProducts();
+          cancelImport(); // 导入后清除选择
         }
       } catch(e) {}
     }
   };
+  xhr.onerror = () => showToast('导入失败', 'error');
   xhr.send(formData);
+}
+
+// 取消导入，清除文件选择
+function cancelImport() {
+  pendingExcelFile = null;
+  document.getElementById('excelFileInput').value = '';
+  document.getElementById('executeImportBtn').style.display = 'none';
+  document.getElementById('cancelImportBtn').style.display = 'none';
+  // 清除文件名显示
+  const fileInput = document.getElementById('excelFileInput');
+  if (fileInput.nextElementSibling) {
+    fileInput.nextElementSibling.textContent = '';
+  }
 }
 
 // ========== 分类管理 ==========
