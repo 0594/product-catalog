@@ -371,4 +371,15 @@ router.post('/clear-database', requireAuth, (req, res) => {
   db.prepare("DELETE FROM sqlite_sequence WHERE name IN ('products','categories','banners')").run();
   res.json({ success: true });
 });
+// 公开设置（无需登录），仅返回非敏感信息
+router.get('/settings/public', (req, res) => {
+  const settings = getAllSettings();
+  res.json({
+    site_title: settings.site_title,
+    captcha_enabled: settings.captcha_enabled,
+    copyright: settings.copyright
+    // 可扩展其他非敏感字段
+  });
+});
+
 module.exports = router;
