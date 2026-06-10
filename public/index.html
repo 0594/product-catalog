@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>产品展示</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+  <style>
+    :root {
+      --primary: #2563eb;
+      --bg: #f8fafc;
+      --card-bg: #fff;
+      --text: #1e293b;
+      --text-light: #64748b;
+      --border: #e2e8f0;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', Roboto, 'PingFang SC', 'Microsoft YaHei', sans-serif; background: var(--bg); color: var(--text); }
+    .header { background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 100; }
+    .header-inner { max-width: 1280px; margin: 0 auto; padding: 0.8rem 1rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem; }
+    .site-title { font-size: 1.5rem; font-weight: 700; color: var(--primary); }
+    .controls { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; }
+    .search-input, select, button { padding: 0.5rem 0.8rem; border: 1px solid var(--border); border-radius: 6px; background: #fff; font-size: 0.9rem; }
+    .search-input { width: 200px; }
+    .lang-switch { cursor: pointer; background: none; border: none; font-size: 0.9rem; color: var(--primary); }
+    .banner-section { display: none; }
+    .banner-section.active { display: block; }
+    .swiper { width: 100%; height: 350px; margin-bottom: 1.5rem; }
+    .swiper img { width: 100%; height: 100%; object-fit: cover; }
+    .container { max-width: 1280px; margin: 0 auto; padding: 1rem; }
+    .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1.2rem; }
+    .product-card { background: var(--card-bg); border-radius: 10px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.05); transition: transform 0.2s; }
+    .product-card:hover { transform: translateY(-4px); }
+    .product-image { width: 100%; height: 200px; display: flex; align-items: center; justify-content: center; background: #f1f5f9; cursor: pointer; }
+    .product-image img { max-width: 100%; max-height: 100%; object-fit: contain; }
+    .product-info { padding: 0.8rem; }
+    .product-sku { font-size: 0.75rem; color: var(--text-light); }
+    .product-name { font-weight: 600; margin: 0.3rem 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .product-prices { display: flex; gap: 0.5rem; align-items: baseline; }
+    .price1 { font-size: 1.1rem; font-weight: 700; color: #dc2626; }
+    .price2 { font-size: 0.85rem; color: var(--text-light); text-decoration: line-through; }
+    .pagination { display: flex; justify-content: center; gap: 0.5rem; margin-top: 1.5rem; }
+    .page-btn { padding: 0.4rem 0.8rem; border: 1px solid var(--border); border-radius: 5px; cursor: pointer; background: #fff; }
+    .page-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+    .lightbox { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); justify-content: center; align-items: center; z-index: 1000; }
+    .lightbox.active { display: flex; }
+    .lightbox img { max-width: 90%; max-height: 90%; border-radius: 8px; }
+    .close-lightbox { position: absolute; top: 20px; right: 30px; font-size: 2rem; color: #fff; cursor: pointer; }
+    .no-image { width: 100%; height: 200px; display: flex; align-items: center; justify-content: center; color: #ccc; font-size: 3rem; }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="header-inner">
+      <div class="site-title" id="siteTitle">Product Catalog</div>
+      <div class="controls">
+        <select id="categoryFilter"><option value="all">全部分类</option></select>
+        <input type="text" class="search-input" id="searchInput" placeholder="搜索SKU/名称">
+        <button id="langToggle" class="lang-switch">EN / 中文</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="banner-section" id="bannerSection">
+    <div class="swiper" id="bannerSwiper"><div class="swiper-wrapper"></div><div class="swiper-pagination"></div></div>
+  </div>
+
+  <main class="container">
+    <div class="product-grid" id="productGrid"></div>
+    <div class="pagination" id="pagination"></div>
+  </main>
+
+  <div class="lightbox" id="lightbox">
+    <span class="close-lightbox" id="closeLightbox">&times;</span>
+    <img src="" alt="">
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+  <script>
+    const state = {
+      lang: 'zh',
+      currentPage: 1,
+      products: [],
+      total: 0,
+      settings: {}
+    };
+
+    const setLang = (lang) => state.lang = lang;
+    const t = (zh, en) => state.lang === 'zh' ? zh : en;
+
+    // 加载设置
+    async function loadSettings() {
+      const res = await fetch('/api/settings');
+      state.settings = await res.json();
+      document.getElementById('siteTitle').textContent = state.settings.site_title || 'Product Catalog';
+    }
+
+    // 加载分类
+    async function loadCategories() {
+      const res = await fetch('/api/categories');
+      const categories = await res.json();
+      const select = document.getElementById('categoryFilter');
+      categories.forEach(cat => {
+        const option = document.createElement('option');
+        option.value = cat.id;
+        option.textContent = t(cat.name_zh, cat.name_en) || `分类 ${cat.id}`;
+        select.appendChild(option);
+      });
+    }
+
+    // 加载轮播
+    async function loadBanners() {
+      const res = await fetch('/api/banners');
+      const banners = await res.json();
+      const activeBanners = banners.filter(b => b.enabled == 1);
+      const section = document.getElementById('bannerSection');
+      if (activeBanners.length > 0) {
+        section.classList.add('active');
+        const wrapper = document.querySelector('#bannerSwiper .swiper-wrapper');
+        wrapper.innerHTML = activeBanners.map(b => `<div class="swiper-slide"><img src="${b.image}" alt=""></div>`).join('');
+        new Swiper('#bannerSwiper', { loop: true, autoplay: { delay: 3000 }, pagination: { el: '.swiper-pagination', clickable: true } });
+      }
+    }
+
+    // 加载产品
+    async function loadProducts(page = 1) {
+      const category = document.getElementById('categoryFilter').value;
+      const search = document.getElementById('searchInput').value;
+      const limit = state.settings.products_per_page || 12;
+      const params = new URLSearchParams({ category, search, page, limit });
+      const res = await fetch('/api/products?' + params);
+      const data = await res.json();
+      state.products = data.products;
+      state.total = data.total;
+      state.currentPage = page;
+      renderProducts();
+      renderPagination();
+    }
+
+    function renderProducts() {
+      const grid = document.getElementById('productGrid');
+      const displayMode = state.settings.price_display || 'both';
+      const currency = state.settings.currency_symbol || '¥';
+      const defaultImg = state.settings.default_image || '/images/no-image.png';
+
+      grid.innerHTML = state.products.map(p => {
+        const name = t(p.name_zh, p.name_en);
+        const price1 = Number(p.price1);
+        const price2 = Number(p.price2);
+        let priceHTML = '';
+        if (displayMode === 'both') priceHTML = `<span class="price1">${currency}${price1}</span><span class="price2">${currency}${price2}</span>`;
+        else if (displayMode === 'price1') priceHTML = `<span class="price1">${currency}${price1}</span>`;
+        else if (displayMode === 'price2') priceHTML = `<span class="price1">${currency}${price2}</span>`;
+
+        return `
+          <div class="product-card">
+            <div class="product-image" onclick="openLightbox('${p.image || defaultImg}')">
+              ${p.image ? `<img src="${p.image}" alt="${name}">` : `<div class="no-image">📷</div>`}
+            </div>
+            <div class="product-info">
+              <div class="product-sku">${p.sku}</div>
+              <div class="product-name" title="${name}">${name}</div>
+              <div class="product-prices">${priceHTML}</div>
+            </div>
+          </div>`;
+      }).join('');
+    }
+
+    function renderPagination() {
+      const totalPages = Math.ceil(state.total / (state.settings.products_per_page || 12));
+      const pagination = document.getElementById('pagination');
+      if (totalPages <= 1) { pagination.innerHTML = ''; return; }
+      let html = '';
+      for (let i = 1; i <= totalPages; i++) {
+        html += `<button class="page-btn ${i === state.currentPage ? 'active' : ''}" onclick="loadProducts(${i})">${i}</button>`;
+      }
+      pagination.innerHTML = html;
+    }
+
+    function openLightbox(src) {
+      const lightbox = document.getElementById('lightbox');
+      lightbox.classList.add('active');
+      lightbox.querySelector('img').src = src;
+    }
+
+    document.getElementById('closeLightbox').addEventListener('click', () => {
+      document.getElementById('lightbox').classList.remove('active');
+    });
+
+    document.getElementById('langToggle').addEventListener('click', () => {
+      setLang(state.lang === 'zh' ? 'en' : 'zh');
+      loadCategories();
+      renderProducts();
+    });
+
+    let searchTimer;
+    document.getElementById('searchInput').addEventListener('input', (e) => {
+      clearTimeout(searchTimer);
+      searchTimer = setTimeout(() => loadProducts(1), 300);
+    });
+
+    document.getElementById('categoryFilter').addEventListener('change', () => loadProducts(1));
+
+    // 初始加载
+    (async () => {
+      await loadSettings();
+      await loadCategories();
+      await loadBanners();
+      await loadProducts();
+    })();
+  </script>
+</body>
+</html>
