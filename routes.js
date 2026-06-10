@@ -34,8 +34,10 @@ router.post('/login', (req, res) => {
     }
   }
 
-  // 默认密码 admin123，可在生产环境中修改
-  if (password === 'admin123') {
+  // 从数据库读取密码，若未设置则使用默认值
+  const storedPassword = getSetting('admin_password') || 'admin123';
+
+  if (password === storedPassword) {
     req.session.isLoggedIn = true;
     res.json({ success: true });
   } else {
@@ -380,6 +382,20 @@ router.get('/settings/public', (req, res) => {
     copyright: settings.copyright
     // 可扩展其他非敏感字段
   });
+});
+// 修改密码
+router.put('/change-password', requireAuth, (req, res) => {
+  const { old_password, new_password } = req.body;
+  if (!old_password || !new_password) {
+    return res.status(400).json({ error: '旧密码和新密码不能为空' });
+  }
+  const storedPassword = getSetting('admin_password') || 'admin123';
+  if (old_password !== storedPassword) {
+    return res.status(400).json({ error: '旧密码错误' });
+  }
+  // 更新数据库中的密码
+  db.prepare('INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)').run('admin_password', new_password);
+  res.json({ success: true });
 });
 
 module.exports = router;
