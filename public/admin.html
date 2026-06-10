@@ -81,7 +81,7 @@
     <h1 id="siteTitleDisplay">产品展示系统</h1>
     <button class="btn btn-outline" onclick="logout()">退出登录</button>
   </div>
-  
+
   <div class="tabs">
     <div class="tab active" data-tab="products">📦 产品管理</div>
     <div class="tab" data-tab="categories">🏷️ 分类管理</div>
@@ -113,7 +113,7 @@
       <input type="number" id="newPrice1" placeholder="价格1" value="0" step="0.01">
       <input type="number" id="newPrice2" placeholder="价格2" value="0" step="0.01">
       <select id="newCategory"></select>
-      <input type="file" id="newImage" accept="image/*" style="width:220px;">
+      <input type="file" id="newImage" accept="image/*" style="width:200px;">
       <button class="btn btn-primary" onclick="addProductInline()">➕ 添加</button>
     </div>
 
@@ -213,7 +213,7 @@ async function initLoginPage() {
   } catch (e) {}
 }
 initLoginPage();
-  
+
 function showToast(msg, type='success') {
   const t = document.getElementById('toast');
   t.textContent = msg;
@@ -544,88 +544,38 @@ async function clearDatabase() {
   }
 }
 
-// ========== Excel 导入（修复版） ==========
-let pendingExcelFile = null;
-
+// Excel 导入
+let pendingExcelFile=null;
 function handleFileSelect(input) {
-  // 关键：先清空，确保再次选择同一文件时也能触发 change
-  input.value = '';
-  
-  if (input.files.length > 0) {
-    pendingExcelFile = input.files[0];
-    document.getElementById('executeImportBtn').style.display = 'inline-block';
-    document.getElementById('cancelImportBtn').style.display = 'inline-block';
-  } else {
-    cancelImport();
-  }
+  if(input.files.length) { pendingExcelFile=input.files[0]; document.getElementById('executeImportBtn').style.display='inline-block'; document.getElementById('cancelImportBtn').style.display='inline-block'; }
+  else cancelImport();
 }
-
 function executeImport() {
-  if (!pendingExcelFile) return showToast('没有待导入的文件', 'error');
-
-  const execBtn = document.getElementById('executeImportBtn');
-  const cancelBtn = document.getElementById('cancelImportBtn');
-  const progressDiv = document.getElementById('importProgress');
-  const fill = document.getElementById('progressFill');
-  const text = document.getElementById('progressText');
-
-  // 禁用按钮，防止重复点击
-  execBtn.disabled = true;
-  cancelBtn.disabled = true;
-
-  const formData = new FormData();
-  formData.append('file', pendingExcelFile);
-
-  progressDiv.style.display = 'block';
+  if(!pendingExcelFile) return;
+  const fd = new FormData(); fd.append('file', pendingExcelFile);
+  const div=document.getElementById('importProgress'), fill=document.getElementById('progressFill'), txt=document.getElementById('progressText');
+  div.style.display='block';
   const xhr = new XMLHttpRequest();
-  xhr.open('POST', API + '/products/import');
-  xhr.setRequestHeader('Accept', 'text/event-stream');
-
-  let lastIndex = 0;
-  xhr.onprogress = function () {
-    const responseText = xhr.responseText;
-    const newPart = responseText.substring(lastIndex);
-    lastIndex = responseText.length;
-    const lines = newPart.split('\n').filter(l => l.startsWith('data: '));
-    if (lines.length > 0) {
-      try {
-        const data = JSON.parse(lines[lines.length - 1].replace('data: ', ''));
-        const pct = data.total > 0 ? (data.processed / data.total * 100) : 0;
-        fill.style.width = pct + '%';
-        text.textContent = `已处理: ${data.processed}/${data.total} 成功: ${data.success} 跳过: ${data.skipped}`;
-        if (data.done) {
-          setTimeout(() => {
-            cancelImport();      // 导入完成后重置界面
-            loadProducts();
-            showToast('导入完成');
-          }, 500);
-        }
-      } catch (e) {}
+  xhr.open('POST', API+'/products/import'); xhr.setRequestHeader('Accept','text/event-stream');
+  let last=0;
+  xhr.onprogress = ()=>{
+    const resp = xhr.responseText;
+    const lines = resp.substring(last).split('\n').filter(l=>l.startsWith('data: '));
+    last = resp.length;
+    if(lines.length){
+      const data = JSON.parse(lines[lines.length-1].replace('data: ',''));
+      fill.style.width = (data.processed/data.total*100)+'%';
+      txt.textContent = `已处理:${data.processed}/${data.total} 成功:${data.success} 跳过:${data.skipped}`;
+      if(data.done){ showToast('导入完成'); setTimeout(()=>div.style.display='none',3000); loadProducts(); cancelImport(); }
     }
   };
-  xhr.onloadend = function () {
-    execBtn.disabled = false;
-    cancelBtn.disabled = false;
-  };
-  xhr.onerror = function () {
-    showToast('导入失败', 'error');
-    execBtn.disabled = false;
-    cancelBtn.disabled = false;
-  };
-  xhr.send(formData);
+  xhr.send(fd);
+}
+function cancelImport() {
+  pendingExcelFile=null; document.getElementById('excelFileInput').value='';
+  document.getElementById('executeImportBtn').style.display='none'; document.getElementById('cancelImportBtn').style.display='none';
 }
 
-function cancelImport() {
-  pendingExcelFile = null;
-  const fileInput = document.getElementById('excelFileInput');
-  fileInput.value = '';
-  document.getElementById('executeImportBtn').style.display = 'none';
-  document.getElementById('cancelImportBtn').style.display = 'none';
-  document.getElementById('importProgress').style.display = 'none';
-}
-  
-// 取消导入（绑定按钮点击）
-document.getElementById('cancelImportBtn').addEventListener('click', resetImportUI);
 checkAuth();
 </script>
 </body>
