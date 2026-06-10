@@ -177,11 +177,29 @@
       <div class="form-group"><label>启用验证码</label><select name="captcha_enabled"><option value="true">开启</option><option value="false">关闭</option></select></div>
       <div class="form-group"><label>底部版权信息</label><input name="copyright"></div>
       <div class="form-group"><label>后台入口路径</label><input name="admin_path" placeholder="/admin">
-  <small style="color:#64748b;">保存后需重启服务生效</small>
+          <small style="color:#64748b;">保存后需重启服务生效</small>
 </div>
       <button type="submit" class="btn btn-primary">保存设置</button>
     </form>
-
+<!-- 修改密码 -->
+<div style="margin-top:2rem; border-top:1px solid var(--border); padding-top:1rem;">
+  <h3>🔑 修改管理员密码</h3>
+  <div class="form-group">
+    <label>旧密码</label>
+    <input type="password" id="oldPassword" placeholder="请输入旧密码">
+  </div>
+  <div class="form-group">
+    <label>新密码</label>
+    <input type="password" id="newPassword" placeholder="请输入新密码">
+  </div>
+  <div class="form-group">
+    <label>确认新密码</label>
+    <input type="password" id="confirmPassword" placeholder="请再次输入新密码">
+  </div>
+  <button class="btn btn-primary" onclick="changePassword()">修改密码</button>
+  <span id="changePwdMsg" style="margin-left:1rem;"></span>
+</div>
+    
     <!-- 清除数据库 -->
     <div style="margin-top:2rem; border-top:1px solid var(--border); padding-top:1rem;">
       <h3 style="color:var(--danger);">⚠️ 危险操作</h3>
@@ -578,7 +596,47 @@ function cancelImport() {
   pendingExcelFile=null; document.getElementById('excelFileInput').value='';
   document.getElementById('executeImportBtn').style.display='none'; document.getElementById('cancelImportBtn').style.display='none';
 }
+//新增改密码函数
+  async function changePassword() {
+  const oldPwd = document.getElementById('oldPassword').value;
+  const newPwd = document.getElementById('newPassword').value;
+  const confirmPwd = document.getElementById('confirmPassword').value;
+  const msgSpan = document.getElementById('changePwdMsg');
 
+  if (!oldPwd || !newPwd || !confirmPwd) {
+    msgSpan.textContent = '所有字段必填';
+    msgSpan.style.color = '#dc2626';
+    return;
+  }
+  if (newPwd !== confirmPwd) {
+    msgSpan.textContent = '两次新密码不一致';
+    msgSpan.style.color = '#dc2626';
+    return;
+  }
+  try {
+    const res = await fetch(API + '/change-password', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ old_password: oldPwd, new_password: newPwd })
+    });
+    const data = await res.json();
+    if (data.success) {
+      msgSpan.textContent = '密码修改成功';
+      msgSpan.style.color = '#16a34a';
+      // 清空输入框
+      document.getElementById('oldPassword').value = '';
+      document.getElementById('newPassword').value = '';
+      document.getElementById('confirmPassword').value = '';
+    } else {
+      msgSpan.textContent = data.error || '修改失败';
+      msgSpan.style.color = '#dc2626';
+    }
+  } catch (e) {
+    msgSpan.textContent = '请求失败';
+    msgSpan.style.color = '#dc2626';
+  }
+}
+  
 checkAuth();
 </script>
 </body>
