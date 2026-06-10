@@ -197,6 +197,23 @@ let productsPage = 1;
 let categoriesCache = [];
 let clearConfirmCount = 0; // 清除数据库确认计数
 
+  // 新增：初始化登录页面，根据设置显示/隐藏验证码
+async function initLoginPage() {
+  try {
+    const res = await fetch(API + '/settings/public');
+    if (res.ok) {
+      const settings = await res.json();
+      const captchaGroup = document.getElementById('captchaGroup');
+      if (settings.captcha_enabled === 'false') {
+        captchaGroup.style.display = 'none';
+      } else {
+        captchaGroup.style.display = 'flex';
+      }
+    }
+  } catch (e) {}
+}
+initLoginPage();
+  
 function showToast(msg, type='success') {
   const t = document.getElementById('toast');
   t.textContent = msg;
