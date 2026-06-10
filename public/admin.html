@@ -12,14 +12,11 @@
     }
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif; background: var(--bg); color: var(--text); }
-
-    /* 登录页 */
     .login-container { max-width: 400px; margin: 80px auto; background: var(--card); padding: 2rem; border-radius: var(--radius); box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
     .login-container h2 { text-align: center; margin-bottom: 1.5rem; }
     .captcha-row { display: flex; gap: 0.5rem; align-items: center; margin-bottom: 1rem; }
     .captcha-row img { cursor: pointer; border: 1px solid var(--border); border-radius: 4px; height: 40px; }
     .captcha-row input { flex: 1; }
-    
     .admin-wrapper { display: none; }
     .topbar { background: var(--card); padding: 0.8rem 1.5rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); margin-bottom: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
     .topbar h1 { font-size: 1.5rem; }
@@ -28,7 +25,6 @@
     .tab.active { background: var(--primary); color: white; }
     .tab-content { display: none; padding: 0 1.5rem; }
     .tab-content.active { display: block; }
-
     .btn { padding: 0.4rem 0.9rem; border: none; border-radius: 5px; cursor: pointer; font-size: 0.85rem; font-weight: 500; transition: opacity 0.2s; }
     .btn:hover { opacity: 0.9; }
     .btn-primary { background: var(--primary); color: white; }
@@ -37,44 +33,31 @@
     .btn-warning { background: var(--warning); color: white; }
     .btn-outline { background: white; border: 1px solid var(--border); color: var(--text); }
     .btn-group { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1rem; align-items: center; }
-
     input, select, textarea { padding: 0.5rem 0.7rem; border: 1px solid var(--border); border-radius: 4px; font-size: 0.9rem; outline: none; background: white; }
     input:focus, select:focus { border-color: var(--primary); box-shadow: 0 0 0 2px var(--primary-light); }
-
-    /* 固定表头容器 */
-    .table-wrapper {
-      max-height: 600px;
-      overflow-y: auto;
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-    }
+    .table-wrapper { max-height: 600px; overflow-y: auto; border: 1px solid var(--border); border-radius: var(--radius); }
     table { width: 100%; border-collapse: collapse; background: var(--card); }
     th, td { padding: 0.6rem 0.5rem; border-bottom: 1px solid var(--border); font-size: 0.85rem; text-align: left; }
     th { background: #f8fafc; font-weight: 600; position: sticky; top: 0; z-index: 2; }
     tr:hover td { background: #f1f5f9; }
-    .editable { cursor: pointer; position: relative; }
+    .editable { cursor: pointer; }
     .editable:hover { background: #e2e8f0; }
     .editable input, .editable select { width: 100%; min-width: 80px; }
     .image-thumb { width: 40px; height: 40px; object-fit: cover; border-radius: 4px; cursor: pointer; }
     .pagination { display: flex; gap: 0.5rem; justify-content: center; margin-top: 1rem; }
     .page-btn { padding: 0.3rem 0.7rem; background: var(--card); border: 1px solid var(--border); border-radius: 4px; cursor: pointer; }
     .page-btn.active { background: var(--primary); color: white; }
-
     .progress-container { margin: 0.5rem 0; }
     .progress-bar { height: 20px; background: #e2e8f0; border-radius: 10px; overflow: hidden; }
     .progress-fill { height: 100%; background: var(--primary); width: 0%; transition: width 0.3s; border-radius: 10px; }
     .progress-text { font-size: 0.8rem; color: var(--text-light); margin-top: 0.2rem; }
-
     .toast { position: fixed; top: 20px; right: 20px; background: var(--card); padding: 0.8rem 1.2rem; border-radius: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); z-index: 2000; display: none; }
     .toast.show { display: block; animation: fadeIn 0.3s; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
-
     .inline-add { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; margin-bottom: 1rem; }
     .inline-add input, .inline-add select { width: 130px; }
     .delete-img-btn { background: none; border: none; color: var(--danger); cursor: pointer; font-size: 0.75rem; margin-left: 0.2rem; }
-    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); z-index: 1000; justify-content: center; align-items: center; }
-    .modal.active { display: flex; }
-    .modal-content { background: var(--card); border-radius: var(--radius); padding: 1.5rem; max-width: 400px; width: 90%; }
+    .clear-warning { color: var(--danger); font-weight: bold; margin-top: 1rem; }
   </style>
 </head>
 <body>
@@ -134,7 +117,6 @@
       <button class="btn btn-primary" onclick="addProductInline()">➕ 添加</button>
     </div>
 
-    <!-- 固定表头容器 -->
     <div class="table-wrapper">
       <table id="productsTable">
         <thead>
@@ -156,17 +138,19 @@
     <div class="pagination" id="productsPagination"></div>
   </div>
 
-  <!-- 分类管理 -->
+  <!-- 分类管理（固定表头） -->
   <div class="tab-content" id="tab-categories">
     <div class="inline-add">
       <input type="text" id="newCatNameZh" placeholder="中文名称">
       <input type="text" id="newCatNameEn" placeholder="英文名称">
       <button class="btn btn-primary" onclick="addCategoryInline()">➕ 添加分类</button>
     </div>
-    <table>
-      <thead><tr><th>ID</th><th>中文名称</th><th>英文名称</th><th>操作</th></tr></thead>
-      <tbody id="categoriesTbody"></tbody>
-    </table>
+    <div class="table-wrapper">
+      <table>
+        <thead><tr><th>ID</th><th>中文名称</th><th>英文名称</th><th>操作</th></tr></thead>
+        <tbody id="categoriesTbody"></tbody>
+      </table>
+    </div>
   </div>
 
   <!-- 轮播图管理 -->
@@ -194,6 +178,14 @@
       <div class="form-group"><label>底部版权信息</label><input name="copyright"></div>
       <button type="submit" class="btn btn-primary">保存设置</button>
     </form>
+
+    <!-- 清除数据库 -->
+    <div style="margin-top:2rem; border-top:1px solid var(--border); padding-top:1rem;">
+      <h3 style="color:var(--danger);">⚠️ 危险操作</h3>
+      <p>清除所有产品、分类和轮播图数据（网站设置保留）</p>
+      <button class="btn btn-danger" id="clearDatabaseBtn" onclick="handleClearDatabase()">清除所有数据</button>
+      <span id="clearConfirmText" style="margin-left:1rem; color:var(--danger); font-weight:bold;"></span>
+    </div>
   </div>
 </div>
 
@@ -203,6 +195,7 @@
 const API = '/api';
 let productsPage = 1;
 let categoriesCache = [];
+let clearConfirmCount = 0; // 清除数据库确认计数
 
 function showToast(msg, type='success') {
   const t = document.getElementById('toast');
@@ -245,7 +238,6 @@ async function initAdmin() {
   document.querySelector('.tab[data-tab="products"]').click();
 }
 
-// 选项卡切换
 document.querySelectorAll('.tab').forEach(tab => {
   tab.addEventListener('click', function() {
     document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
@@ -271,13 +263,15 @@ async function loadProducts(page=1) {
 
 function renderProducts(products) {
   const tbody = document.querySelector('#productsTable tbody');
+  const defaultImg = document.getElementById('settingsForm')?.default_image?.value || '/images/no-image.png';
   tbody.innerHTML = products.map(p=>{
     const catName = getCategoryName(p.category_id);
+    const imgSrc = p.image || defaultImg || '/images/no-image.png';
     return `<tr>
       <td><input type="checkbox" value="${p.id}" class="product-check"></td>
       <td><button class="btn btn-danger" style="padding:0.2rem 0.5rem;font-size:0.75rem" onclick="deleteProduct(${p.id})">🗑️</button></td>
       <td style="display:flex;align-items:center;gap:0.2rem;">
-        <img src="${p.image || '/images/no-image.png'}" class="image-thumb" onclick="editProductImage(${p.id})" title="更换图片">
+        <img src="${imgSrc}" class="image-thumb" onclick="editProductImage(${p.id})" title="更换图片" onerror="this.src='/images/no-image.png'">
         ${p.image ? `<button class="delete-img-btn" onclick="deleteProductImage(${p.id})" title="删除图片">✕</button>` : ''}
       </td>
       <td class="editable" data-field="sku" data-id="${p.id}">${esc(p.sku)}</td>
@@ -327,10 +321,8 @@ async function saveEdit(td, field, id, newVal, displayVal) {
     const body = { [field]: (field==='price1'||field==='price2'||field==='category_id') ? Number(newVal) : newVal };
     await request(API+'/products/'+id, { method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body) });
     showToast('更新成功');
-    loadProducts(productsPage);  // 自动刷新当前页数据
-  } catch(e) {
-    loadProducts(productsPage);  // 失败时也刷新恢复原状
-  }
+    loadProducts(productsPage);
+  } catch(e) { loadProducts(productsPage); }
 }
 
 async function deleteProduct(id) {
@@ -497,8 +489,41 @@ document.getElementById('settingsForm').addEventListener('submit', async e=>{
   const fd = new FormData(e.target); const data={};
   for(const [k,v] of fd.entries()) data[k]=v;
   await request(API+'/settings',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
-  showToast('设置已保存'); loadSettings();
+  showToast('设置已保存');
+  loadSettings();
 });
+
+// ========== 清除数据库（三次确认） ==========
+function handleClearDatabase() {
+  clearConfirmCount++;
+  const confirmText = document.getElementById('clearConfirmText');
+  if (clearConfirmCount === 1) {
+    confirmText.textContent = '请再次点击确认 (1/3)';
+  } else if (clearConfirmCount === 2) {
+    confirmText.textContent = '最后一次确认，点击将删除所有数据 (2/3)';
+  } else if (clearConfirmCount >= 3) {
+    clearDatabase();
+    clearConfirmCount = 0;
+    confirmText.textContent = '';
+  }
+}
+
+async function clearDatabase() {
+  if (!confirm('⚠️ 最终确认：删除所有产品、分类和轮播图？此操作不可恢复！')) {
+    clearConfirmCount = 0;
+    document.getElementById('clearConfirmText').textContent = '';
+    return;
+  }
+  try {
+    await request(API + '/clear-database', { method: 'POST' });
+    showToast('所有数据已清除');
+    loadProducts();
+    loadCategories();
+    loadBanners();
+  } catch (e) {
+    showToast('清除失败', 'error');
+  }
+}
 
 // Excel 导入
 let pendingExcelFile=null;
